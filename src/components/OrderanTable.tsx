@@ -3,7 +3,7 @@ import type { Orderan, Teknisi } from "@/lib/mockData";
 import { STATUS_LIST } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { store } from "@/lib/dataStore";
+import { store, useStore } from "@/lib/dataStore";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -19,9 +19,11 @@ interface Props {
   teknisi: Teknisi[];
   onEdit: (o: Orderan) => void;
   emptyText?: string;
+  showKirimJadwal?: boolean;
+  showKirimInvoice?: boolean;
 }
 
-export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
+export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJadwal, showKirimInvoice }: Props) {
   if (orderan.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground text-sm border border-dashed border-border rounded-2xl bg-card/50">
@@ -30,12 +32,16 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
     );
   }
 
+  const spareparts = useStore((s) => s.sparepart);
   const findTek = (id: string | null) => teknisi.find((t) => t.id === id);
 
   return (
     <div className="space-y-3">
       {orderan.map((o) => {
         const tek = findTek(o.teknisi_id);
+        const usedSp = o.spare_parts?.[0];
+        const spDetail = usedSp ? spareparts.find((sp) => sp.id === usedSp.sparepart_id) : null;
+
         return (
           <div
             key={o.id}
@@ -53,6 +59,15 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">{o.keluhan}</p>
+                
+                {spDetail && usedSp && (
+                  <div className="mt-1.5">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground text-[11px] font-medium border border-border/40">
+                      Spare Part: {spDetail.nama} ({usedSp.qty} {spDetail.satuan})
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1"><Phone className="size-3" />{o.no_wa}</span>
                   <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{o.alamat}</span>
@@ -80,7 +95,7 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-border">
-              <div className="flex-1 flex items-center gap-2 text-sm">
+              <div className="flex-1 flex items-center gap-2 text-sm flex-wrap">
                 {tek ? (
                   <>
                     <span className="inline-flex items-center gap-1.5 text-success">
@@ -88,6 +103,18 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
                     </span>
                     <span className="font-medium">{tek.nama}</span>
                     <span className="text-xs text-muted-foreground">({tek.wilayah})</span>
+                    {showKirimJadwal && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 h-7 px-2.5 text-[10px] font-semibold border-primary/20 text-primary hover:bg-primary/5 hover:text-primary transition-all rounded-md"
+                        onClick={() => {
+                          toast.success(`Pesan WhatsApp berhasil dikirim`);
+                        }}
+                      >
+                        Kirim Jadwal via WA
+                      </Button>
+                    )}
                   </>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -95,7 +122,19 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText }: Props) {
                   </span>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center flex-wrap">
+                {showKirimInvoice && o.status === "Selesai" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs font-semibold border-success/30 hover:bg-success/5 hover:text-success text-success transition-all rounded-md"
+                    onClick={() => {
+                      toast.success(`Pesan WhatsApp berhasil dikirim`);
+                    }}
+                  >
+                    Kirim Invoice via WA
+                  </Button>
+                )}
                 <Select
                   value={o.teknisi_id ?? "none"}
                   onValueChange={(v) =>

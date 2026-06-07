@@ -83,6 +83,7 @@ function OrderanPage() {
         orderan={filtered}
         teknisi={teknisi}
         onEdit={(o) => { setEditing(o); setOpen(true); }}
+        showKirimInvoice={true}
       />
 
       <OrderanDialog

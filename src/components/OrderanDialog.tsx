@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WILAYAH_LIST, STATUS_LIST, type Orderan, type Teknisi } from "@/lib/mockData";
-import { store } from "@/lib/dataStore";
+import { store, useStore } from "@/lib/dataStore";
 import { toast } from "sonner";
 
 interface Props {
@@ -28,10 +28,12 @@ const empty = (date: string): FormState => ({
   teknisi_id: null,
   tanggal: date,
   jam: "09:00",
+  spare_parts: [],
 });
 
 export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknisi }: Props) {
   const [form, setForm] = useState<FormState>(() => empty(defaultDate || new Date().toISOString().slice(0, 10)));
+  const spareparts = useStore((s) => s.sparepart);
 
   useEffect(() => {
     if (open) {
@@ -41,6 +43,9 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  const selectedSparePartId = form.spare_parts?.[0]?.sparepart_id ?? "none";
+  const selectedQty = form.spare_parts?.[0]?.qty ?? 1;
 
   const submit = () => {
     if (!form.nama_pelanggan || !form.no_wa || !form.alamat) {
@@ -119,6 +124,44 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
                 {STATUS_LIST.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Spare Part yang Digunakan</Label>
+            <Select
+              value={selectedSparePartId}
+              onValueChange={(v) => {
+                if (v === "none") {
+                  set("spare_parts", []);
+                } else {
+                  set("spare_parts", [{ sparepart_id: v, qty: selectedQty }]);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih spare part (Opsional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Tidak ada</SelectItem>
+                {spareparts.map((sp) => (
+                  <SelectItem key={sp.id} value={sp.id} disabled={sp.stok === 0}>
+                    {sp.nama} (Stok: {sp.stok} {sp.satuan}) {sp.stok === 0 ? "— Habis" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Jumlah Spare Part</Label>
+            <Input
+              type="number"
+              min={1}
+              disabled={selectedSparePartId === "none"}
+              value={selectedQty}
+              onChange={(e) => {
+                const qty = Math.max(1, parseInt(e.target.value) || 1);
+                set("spare_parts", [{ sparepart_id: selectedSparePartId, qty }]);
+              }}
+            />
           </div>
           <div className="sm:col-span-2 space-y-1.5">
             <Label>Keluhan</Label>

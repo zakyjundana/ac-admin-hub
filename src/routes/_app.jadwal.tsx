@@ -107,6 +107,7 @@ function JadwalPage() {
               teknisi={teknisi}
               onEdit={openEdit}
               emptyText="Belum ada orderan untuk tanggal ini"
+              showKirimJadwal={true}
             />
           </div>
         </div>

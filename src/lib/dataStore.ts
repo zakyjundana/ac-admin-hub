@@ -45,8 +45,20 @@ export const store = {
       ...state,
       orderan: state.orderan.map((o) => (o.id === id ? { ...o, ...patch } : o)),
     };
-    // Saat status berubah menjadi "Selesai" → catat ke riwayat otomatis
+    // Saat status berubah menjadi "Selesai" → catat ke riwayat otomatis & kurangi stok spare part
     if (prev && patch.status === "Selesai" && prev.status !== "Selesai") {
+      // Kurangi stok spare part
+      const partsToReduce = patch.spare_parts !== undefined ? patch.spare_parts : prev.spare_parts;
+      if (partsToReduce && partsToReduce.length > 0) {
+        state = {
+          ...state,
+          sparepart: state.sparepart.map((sp) => {
+            const match = partsToReduce.find((p) => p.sparepart_id === sp.id);
+            return match ? { ...sp, stok: Math.max(0, sp.stok - match.qty) } : sp;
+          }),
+        };
+      }
+
       const exists = state.riwayat.some((r) => r.orderan_id === id);
       if (!exists) {
         const r: RiwayatKerusakan = {

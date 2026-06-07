@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Calendar, Users, ClipboardList, Snowflake, Menu, X, Package, ShieldCheck } from "lucide-react";
+import { Calendar, Users, ClipboardList, Snowflake, Menu, X, Package, ShieldCheck, Coins } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const nav = [
   { to: "/stok", label: "Stok Spare Part", icon: Package },
   { to: "/riwayat", label: "Riwayat & Garansi", icon: ShieldCheck },
   { to: "/teknisi", label: "Teknisi", icon: Users },
+  { to: "/keuangan", label: "Keuangan & Insentif", icon: Coins },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
