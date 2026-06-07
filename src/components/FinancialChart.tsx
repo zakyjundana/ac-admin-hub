@@ -45,7 +45,7 @@ export default function FinancialChart({ data }: Props) {
         <XAxis dataKey="name" className="text-[10px] fill-muted-foreground" />
         <YAxis 
           className="text-[10px] fill-muted-foreground"
-          tickFormatter={(val) => `Rp ${val / 1000000}M`}
+          tickFormatter={(val) => `Rp ${(val / 1000000).toFixed(1)} Jt`}
         />
         <Tooltip
           formatter={(value: number) => [rupiah(value), ""]}
