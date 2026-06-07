@@ -1,11 +1,13 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Calendar, Users, ClipboardList, Snowflake, Menu, X } from "lucide-react";
+import { Calendar, Users, ClipboardList, Snowflake, Menu, X, Package, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/jadwal", label: "Manajemen Jadwal", icon: Calendar },
   { to: "/orderan", label: "Orderan", icon: ClipboardList },
+  { to: "/stok", label: "Stok Spare Part", icon: Package },
+  { to: "/riwayat", label: "Riwayat & Garansi", icon: ShieldCheck },
   { to: "/teknisi", label: "Teknisi", icon: Users },
 ] as const;
 
