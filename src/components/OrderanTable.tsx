@@ -109,7 +109,14 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                         size="sm"
                         className="ml-2 h-7 px-2.5 text-[10px] font-semibold border-primary/20 text-primary hover:bg-primary/5 hover:text-primary transition-all rounded-md"
                         onClick={() => {
-                          toast.success(`Pesan WhatsApp berhasil dikirim`);
+                          let formattedPhone = o.no_wa.replace(/[^0-9]/g, "");
+                          if (formattedPhone.startsWith("0")) {
+                            formattedPhone = "62" + formattedPhone.slice(1);
+                          }
+                          const pesan = `Halo Bapak/Ibu ${o.nama_pelanggan}, kami dari CoolService mengabarkan bahwa teknisi kami (${tek.nama}) dijadwalkan akan berkunjung ke alamat Anda pada tanggal ${o.tanggal} pukul ${o.jam} WIB untuk menangani keluhan: "${o.keluhan}". Mohon konfirmasinya jika waktu tersebut sudah sesuai. Terima kasih!`;
+                          const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(pesan)}`;
+                          window.open(url, "_blank");
+                          toast.success(`Membuka WhatsApp untuk mengirim jadwal ke ${o.nama_pelanggan}`);
                         }}
                       >
                         Kirim Jadwal via WA
@@ -129,7 +136,14 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                     size="sm"
                     className="h-8 text-xs font-semibold border-success/30 hover:bg-success/5 hover:text-success text-success transition-all rounded-md"
                     onClick={() => {
-                      toast.success(`Pesan WhatsApp berhasil dikirim`);
+                      let formattedPhone = o.no_wa.replace(/[^0-9]/g, "");
+                      if (formattedPhone.startsWith("0")) {
+                        formattedPhone = "62" + formattedPhone.slice(1);
+                      }
+                      const pesan = `Halo Bapak/Ibu ${o.nama_pelanggan}, servis AC Anda dengan keluhan "${o.keluhan}" telah selesai dikerjakan oleh teknisi kami (${tek?.nama || "—"}). Terima kasih telah mempercayai CoolService!`;
+                      const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(pesan)}`;
+                      window.open(url, "_blank");
+                      toast.success(`Membuka WhatsApp untuk mengirim invoice ke ${o.nama_pelanggan}`);
                     }}
                   >
                     Kirim Invoice via WA
