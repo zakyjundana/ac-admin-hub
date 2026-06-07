@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
 import { Route as AppStokRouteImport } from './routes/_app.stok'
 import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
+import { Route as AppRatingRouteImport } from './routes/_app.rating'
 import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
 import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
 import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
@@ -42,6 +43,11 @@ const AppRiwayatRoute = AppRiwayatRouteImport.update({
   path: '/riwayat',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRatingRoute = AppRatingRouteImport.update({
+  id: '/rating',
+  path: '/rating',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOrderanRoute = AppOrderanRouteImport.update({
   id: '/orderan',
   path: '/orderan',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
+  '/rating': typeof AppRatingRoute
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
+  '/rating': typeof AppRatingRoute
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/keuangan': typeof AppKeuanganRoute
   '/_app/orderan': typeof AppOrderanRoute
+  '/_app/rating': typeof AppRatingRoute
   '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
+    | '/rating'
     | '/riwayat'
     | '/stok'
     | '/teknisi'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
+    | '/rating'
     | '/riwayat'
     | '/stok'
     | '/teknisi'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/_app/jadwal'
     | '/_app/keuangan'
     | '/_app/orderan'
+    | '/_app/rating'
     | '/_app/riwayat'
     | '/_app/stok'
     | '/_app/teknisi'
@@ -160,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRiwayatRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/rating': {
+      id: '/_app/rating'
+      path: '/rating'
+      fullPath: '/rating'
+      preLoaderRoute: typeof AppRatingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/orderan': {
       id: '/_app/orderan'
       path: '/orderan'
@@ -188,6 +207,7 @@ interface AppRouteChildren {
   AppJadwalRoute: typeof AppJadwalRoute
   AppKeuanganRoute: typeof AppKeuanganRoute
   AppOrderanRoute: typeof AppOrderanRoute
+  AppRatingRoute: typeof AppRatingRoute
   AppRiwayatRoute: typeof AppRiwayatRoute
   AppStokRoute: typeof AppStokRoute
   AppTeknisiRoute: typeof AppTeknisiRoute
@@ -197,6 +217,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppJadwalRoute: AppJadwalRoute,
   AppKeuanganRoute: AppKeuanganRoute,
   AppOrderanRoute: AppOrderanRoute,
+  AppRatingRoute: AppRatingRoute,
   AppRiwayatRoute: AppRiwayatRoute,
   AppStokRoute: AppStokRoute,
   AppTeknisiRoute: AppTeknisiRoute,

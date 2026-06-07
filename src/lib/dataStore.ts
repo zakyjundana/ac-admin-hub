@@ -4,10 +4,12 @@ import {
   initialTeknisi,
   initialSparePart,
   initialRiwayat,
+  initialFeedback,
   type Orderan,
   type Teknisi,
   type SparePart,
   type RiwayatKerusakan,
+  type Feedback,
 } from "./mockData";
 
 // Simple in-memory store (will be replaced with Supabase later).
@@ -16,6 +18,7 @@ type State = {
   orderan: Orderan[];
   sparepart: SparePart[];
   riwayat: RiwayatKerusakan[];
+  feedback: Feedback[];
 };
 
 let state: State = {
@@ -23,6 +26,7 @@ let state: State = {
   orderan: initialOrderan,
   sparepart: initialSparePart,
   riwayat: initialRiwayat,
+  feedback: initialFeedback,
 };
 const listeners = new Set<() => void>();
 
@@ -124,6 +128,15 @@ export const store = {
   },
   deleteRiwayat: (id: string) => {
     state = { ...state, riwayat: state.riwayat.filter((r) => r.id !== id) };
+    emit();
+  },
+  // ---- Feedback
+  addFeedback: (f: Omit<Feedback, "id">) => {
+    state = { ...state, feedback: [...state.feedback, { ...f, id: `f${Date.now()}` }] };
+    emit();
+  },
+  deleteFeedback: (id: string) => {
+    state = { ...state, feedback: state.feedback.filter((f) => f.id !== id) };
     emit();
   },
 };

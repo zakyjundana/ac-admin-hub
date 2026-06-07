@@ -248,7 +248,7 @@ export function cekGaransi(
   noWa: string,
   tanggalOrderan: string,
   riwayat: RiwayatKerusakan[],
-): RiwayatKerusakan | null {
+ ): RiwayatKerusakan | null {
   const tglOrder = new Date(tanggalOrderan);
   const match = riwayat
     .filter((r) => r.no_wa === noWa)
@@ -262,3 +262,41 @@ export function cekGaransi(
     .sort((a, b) => b.expiry.getTime() - a.expiry.getTime())[0];
   return match ? match.r : null;
 }
+
+// ===== Fase 4: Rating & Feedback =====
+export interface Feedback {
+  id: string;
+  orderan_id: string;
+  teknisi_id: string;
+  nama_pelanggan: string;
+  rating: number; // 1-5
+  ulasan: string;
+  tanggal: string;
+  is_komplain: boolean;
+}
+
+export interface BulananFinansial {
+  bulan: string; // e.g. "Jan", "Feb", "Mar", "Apr", "Mei"
+  pemasukan: number;
+  pengeluaran: number;
+  keuntungan: number;
+}
+
+export const initialFeedback: Feedback[] = [
+  { id: "f1", orderan_id: "o3", teknisi_id: "t4", nama_pelanggan: "Ibu Linda", rating: 5, ulasan: "Pemasangan sangat rapi dan teknisi sopan sekali.", tanggal: addDays(-1), is_komplain: false },
+  { id: "f2", orderan_id: "r2", teknisi_id: "t1", nama_pelanggan: "Ibu Sari", rating: 4, ulasan: "AC kembali dingin, pengerjaan cukup cepat.", tanggal: addDays(-15), is_komplain: false },
+  { id: "f3", orderan_id: "r3", teknisi_id: "t2", nama_pelanggan: "Bapak Andi", rating: 2, ulasan: "Kapasitor diganti, tapi teknisi datang terlambat dari jadwal.", tanggal: addDays(-20), is_komplain: true },
+  { id: "f4", orderan_id: "r4", teknisi_id: "t4", nama_pelanggan: "Ibu Linda", rating: 5, ulasan: "Pelayanan memuaskan, sangat merekomendasikan Rian.", tanggal: addDays(-120), is_komplain: false },
+  { id: "f5", orderan_id: "-", teknisi_id: "t3", nama_pelanggan: "Bapak Budi", rating: 5, ulasan: "Kerja bagus, cepat selesai.", tanggal: addDays(-5), is_komplain: false },
+  { id: "f6", orderan_id: "-", teknisi_id: "t1", nama_pelanggan: "Ibu Dian", rating: 3, ulasan: "AC dingin tapi ada tetesan sedikit di luar.", tanggal: addDays(-7), is_komplain: true },
+  { id: "f7", orderan_id: "-", teknisi_id: "t5", nama_pelanggan: "Bapak Joko", rating: 5, ulasan: "Sangat profesional, menjelaskan detail masalahnya.", tanggal: addDays(-3), is_komplain: false }
+];
+
+export const dataKeuanganHistoris: BulananFinansial[] = [
+  { bulan: "Jan", pemasukan: 12500000, pengeluaran: 9200000, keuntungan: 3300000 },
+  { bulan: "Feb", pemasukan: 14200000, pengeluaran: 9500000, keuntungan: 4700000 },
+  { bulan: "Mar", pemasukan: 13800000, pengeluaran: 10100000, keuntungan: 3700000 },
+  { bulan: "Apr", pemasukan: 15500000, pengeluaran: 9800000, keuntungan: 5700000 },
+  { bulan: "Mei", pemasukan: 17200000, pengeluaran: 10400000, keuntungan: 6800000 }
+];
+
