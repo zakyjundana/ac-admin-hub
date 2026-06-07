@@ -2,14 +2,28 @@ import { useSyncExternalStore } from "react";
 import {
   initialOrderan,
   initialTeknisi,
+  initialSparePart,
+  initialRiwayat,
   type Orderan,
   type Teknisi,
+  type SparePart,
+  type RiwayatKerusakan,
 } from "./mockData";
 
 // Simple in-memory store (will be replaced with Supabase later).
-type State = { teknisi: Teknisi[]; orderan: Orderan[] };
+type State = {
+  teknisi: Teknisi[];
+  orderan: Orderan[];
+  sparepart: SparePart[];
+  riwayat: RiwayatKerusakan[];
+};
 
-let state: State = { teknisi: initialTeknisi, orderan: initialOrderan };
+let state: State = {
+  teknisi: initialTeknisi,
+  orderan: initialOrderan,
+  sparepart: initialSparePart,
+  riwayat: initialRiwayat,
+};
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((l) => l());
@@ -20,27 +34,84 @@ export const store = {
     listeners.add(l);
     return () => listeners.delete(l);
   },
+  // ---- Orderan
   addOrderan: (o: Omit<Orderan, "id">) => {
     state = { ...state, orderan: [...state.orderan, { ...o, id: `o${Date.now()}` }] };
     emit();
   },
   updateOrderan: (id: string, patch: Partial<Orderan>) => {
+    const prev = state.orderan.find((o) => o.id === id);
     state = {
       ...state,
       orderan: state.orderan.map((o) => (o.id === id ? { ...o, ...patch } : o)),
     };
+    // Saat status berubah menjadi "Selesai" → catat ke riwayat otomatis
+    if (prev && patch.status === "Selesai" && prev.status !== "Selesai") {
+      const exists = state.riwayat.some((r) => r.orderan_id === id);
+      if (!exists) {
+        const r: RiwayatKerusakan = {
+          id: `r${Date.now()}`,
+          orderan_id: id,
+          nama_pelanggan: prev.nama_pelanggan,
+          no_wa: prev.no_wa,
+          alamat: prev.alamat,
+          jenis_kerusakan: prev.keluhan,
+          tindakan: "—",
+          teknisi_id: prev.teknisi_id,
+          tanggal_selesai: new Date().toISOString().slice(0, 10),
+          garansi_hari: prev.garansi_hari ?? 30,
+          biaya: 0,
+        };
+        state = { ...state, riwayat: [...state.riwayat, r] };
+      }
+    }
     emit();
   },
   deleteOrderan: (id: string) => {
     state = { ...state, orderan: state.orderan.filter((o) => o.id !== id) };
     emit();
   },
+  // ---- Teknisi
   addTeknisi: (t: Omit<Teknisi, "id">) => {
     state = { ...state, teknisi: [...state.teknisi, { ...t, id: `t${Date.now()}` }] };
     emit();
   },
   deleteTeknisi: (id: string) => {
     state = { ...state, teknisi: state.teknisi.filter((t) => t.id !== id) };
+    emit();
+  },
+  // ---- Spare Part
+  addSparePart: (s: Omit<SparePart, "id">) => {
+    state = { ...state, sparepart: [...state.sparepart, { ...s, id: `sp${Date.now()}` }] };
+    emit();
+  },
+  updateSparePart: (id: string, patch: Partial<SparePart>) => {
+    state = {
+      ...state,
+      sparepart: state.sparepart.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+    };
+    emit();
+  },
+  deleteSparePart: (id: string) => {
+    state = { ...state, sparepart: state.sparepart.filter((s) => s.id !== id) };
+    emit();
+  },
+  adjustStok: (id: string, delta: number) => {
+    state = {
+      ...state,
+      sparepart: state.sparepart.map((s) =>
+        s.id === id ? { ...s, stok: Math.max(0, s.stok + delta) } : s,
+      ),
+    };
+    emit();
+  },
+  // ---- Riwayat
+  addRiwayat: (r: Omit<RiwayatKerusakan, "id">) => {
+    state = { ...state, riwayat: [...state.riwayat, { ...r, id: `r${Date.now()}` }] };
+    emit();
+  },
+  deleteRiwayat: (id: string) => {
+    state = { ...state, riwayat: state.riwayat.filter((r) => r.id !== id) };
     emit();
   },
 };

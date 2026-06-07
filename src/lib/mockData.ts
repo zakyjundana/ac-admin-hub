@@ -21,6 +21,34 @@ export interface Orderan {
   teknisi_id: string | null;
   tanggal: string; // ISO yyyy-mm-dd
   jam: string; // HH:mm
+  garansi_hari?: number; // masa garansi setelah selesai (default 30)
+  spare_parts?: { sparepart_id: string; qty: number }[];
+}
+
+// ===== Fase 2: Spare Parts =====
+export interface SparePart {
+  id: string;
+  nama: string;
+  kategori: string; // contoh: Freon, Filter, Kapasitor, dll
+  satuan: string;   // pcs, kg, meter
+  stok: number;
+  stok_minimum: number;
+  harga: number;
+}
+
+// ===== Fase 2: Riwayat Kerusakan AC per pelanggan =====
+export interface RiwayatKerusakan {
+  id: string;
+  orderan_id: string;       // referensi ke Orderan
+  nama_pelanggan: string;
+  no_wa: string;
+  alamat: string;
+  jenis_kerusakan: string;
+  tindakan: string;
+  teknisi_id: string | null;
+  tanggal_selesai: string;  // ISO yyyy-mm-dd
+  garansi_hari: number;     // 30/60/90 hari
+  biaya: number;
 }
 
 export const WILAYAH_LIST = [
@@ -38,6 +66,17 @@ export const STATUS_LIST: StatusOrder[] = [
   "Belum Selesai",
   "Dalam Pengerjaan",
   "Selesai",
+];
+
+export const KATEGORI_SPAREPART = [
+  "Freon",
+  "Filter",
+  "Kapasitor",
+  "Kompresor",
+  "Pipa",
+  "Remote",
+  "PCB",
+  "Lainnya",
 ];
 
 const today = new Date();
@@ -68,6 +107,7 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: "t1",
     tanggal: addDays(0),
     jam: "09:00",
+    garansi_hari: 30,
   },
   {
     id: "o2",
@@ -80,6 +120,7 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: null,
     tanggal: addDays(0),
     jam: "13:00",
+    garansi_hari: 30,
   },
   {
     id: "o3",
@@ -92,6 +133,7 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: "t4",
     tanggal: addDays(-1),
     jam: "10:30",
+    garansi_hari: 90,
   },
   {
     id: "o4",
@@ -104,6 +146,7 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: "t5",
     tanggal: addDays(1),
     jam: "11:00",
+    garansi_hari: 30,
   },
   {
     id: "o5",
@@ -116,6 +159,7 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: null,
     tanggal: addDays(2),
     jam: "14:00",
+    garansi_hari: 30,
   },
   {
     id: "o6",
@@ -128,5 +172,93 @@ export const initialOrderan: Orderan[] = [
     teknisi_id: "t2",
     tanggal: addDays(0),
     jam: "15:30",
+    garansi_hari: 30,
   },
 ];
+
+export const initialSparePart: SparePart[] = [
+  { id: "sp1", nama: "Freon R32 (1 kg)", kategori: "Freon", satuan: "kg", stok: 8, stok_minimum: 5, harga: 180000 },
+  { id: "sp2", nama: "Freon R410A (1 kg)", kategori: "Freon", satuan: "kg", stok: 3, stok_minimum: 5, harga: 220000 },
+  { id: "sp3", nama: "Filter AC Standard", kategori: "Filter", satuan: "pcs", stok: 24, stok_minimum: 10, harga: 35000 },
+  { id: "sp4", nama: "Kapasitor 35uF", kategori: "Kapasitor", satuan: "pcs", stok: 6, stok_minimum: 8, harga: 65000 },
+  { id: "sp5", nama: "Kapasitor 50uF", kategori: "Kapasitor", satuan: "pcs", stok: 12, stok_minimum: 8, harga: 75000 },
+  { id: "sp6", nama: "Pipa Tembaga 1/4\"", kategori: "Pipa", satuan: "meter", stok: 45, stok_minimum: 20, harga: 55000 },
+  { id: "sp7", nama: "Remote Universal", kategori: "Remote", satuan: "pcs", stok: 2, stok_minimum: 5, harga: 85000 },
+  { id: "sp8", nama: "PCB Indoor 1 PK", kategori: "PCB", satuan: "pcs", stok: 4, stok_minimum: 3, harga: 450000 },
+];
+
+export const initialRiwayat: RiwayatKerusakan[] = [
+  {
+    id: "r1",
+    orderan_id: "o3",
+    nama_pelanggan: "Ibu Linda",
+    no_wa: "081333444555",
+    alamat: "Jl. Kenanga No. 7, Bekasi Timur",
+    jenis_kerusakan: "Pasang AC baru 1 PK",
+    tindakan: "Instalasi unit baru + pipa 3m + bracket",
+    teknisi_id: "t4",
+    tanggal_selesai: addDays(-1),
+    garansi_hari: 90,
+    biaya: 850000,
+  },
+  {
+    id: "r2",
+    orderan_id: "-",
+    nama_pelanggan: "Ibu Sari",
+    no_wa: "081111222333",
+    alamat: "Jl. Melati No. 12, Kebayoran Baru",
+    jenis_kerusakan: "Cuci AC + isi freon",
+    tindakan: "Cuci indoor & outdoor, isi freon 0.3 kg R32",
+    teknisi_id: "t1",
+    tanggal_selesai: addDays(-15),
+    garansi_hari: 30,
+    biaya: 250000,
+  },
+  {
+    id: "r3",
+    orderan_id: "-",
+    nama_pelanggan: "Bapak Andi",
+    no_wa: "081222333444",
+    alamat: "Jl. Mawar Blok C5, Menteng",
+    jenis_kerusakan: "Ganti kapasitor",
+    tindakan: "Ganti kapasitor 35uF outdoor",
+    teknisi_id: "t2",
+    tanggal_selesai: addDays(-20),
+    garansi_hari: 30,
+    biaya: 175000,
+  },
+  {
+    id: "r4",
+    orderan_id: "-",
+    nama_pelanggan: "Ibu Linda",
+    no_wa: "081333444555",
+    alamat: "Jl. Kenanga No. 7, Bekasi Timur",
+    jenis_kerusakan: "Service rutin",
+    tindakan: "Cuci AC + cek tekanan freon",
+    teknisi_id: "t4",
+    tanggal_selesai: addDays(-120),
+    garansi_hari: 30,
+    biaya: 150000,
+  },
+];
+
+// ===== Helper: cek apakah orderan baru masih dalam masa garansi
+// berdasarkan riwayat kerusakan pelanggan (no_wa).
+export function cekGaransi(
+  noWa: string,
+  tanggalOrderan: string,
+  riwayat: RiwayatKerusakan[],
+): RiwayatKerusakan | null {
+  const tglOrder = new Date(tanggalOrderan);
+  const match = riwayat
+    .filter((r) => r.no_wa === noWa)
+    .map((r) => {
+      const selesai = new Date(r.tanggal_selesai);
+      const expiry = new Date(selesai);
+      expiry.setDate(expiry.getDate() + r.garansi_hari);
+      return { r, expiry };
+    })
+    .filter(({ expiry }) => tglOrder <= expiry)
+    .sort((a, b) => b.expiry.getTime() - a.expiry.getTime())[0];
+  return match ? match.r : null;
+}
