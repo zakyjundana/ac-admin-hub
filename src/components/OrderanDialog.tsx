@@ -17,14 +17,15 @@ interface Props {
   teknisi: Teknisi[];
 }
 
-const empty = (date: string) => ({
+type FormState = Omit<Orderan, "id">;
+const empty = (date: string): FormState => ({
   nama_pelanggan: "",
   no_wa: "",
   alamat: "",
   wilayah: WILAYAH_LIST[0],
   keluhan: "",
-  status: "Belum Selesai" as const,
-  teknisi_id: null as string | null,
+  status: "Belum Selesai",
+  teknisi_id: null,
   tanggal: date,
   jam: "09:00",
 });
