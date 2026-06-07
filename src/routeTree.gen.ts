@@ -9,38 +9,85 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
+import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
+import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTeknisiRoute = AppTeknisiRouteImport.update({
+  id: '/teknisi',
+  path: '/teknisi',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOrderanRoute = AppOrderanRouteImport.update({
+  id: '/orderan',
+  path: '/orderan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJadwalRoute = AppJadwalRouteImport.update({
+  id: '/jadwal',
+  path: '/jadwal',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/jadwal': typeof AppJadwalRoute
+  '/orderan': typeof AppOrderanRoute
+  '/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/jadwal': typeof AppJadwalRoute
+  '/orderan': typeof AppOrderanRoute
+  '/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/jadwal': typeof AppJadwalRoute
+  '/_app/orderan': typeof AppOrderanRoute
+  '/_app/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/jadwal' | '/orderan' | '/teknisi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/jadwal' | '/orderan' | '/teknisi'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/jadwal'
+    | '/_app/orderan'
+    | '/_app/teknisi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +95,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/teknisi': {
+      id: '/_app/teknisi'
+      path: '/teknisi'
+      fullPath: '/teknisi'
+      preLoaderRoute: typeof AppTeknisiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/orderan': {
+      id: '/_app/orderan'
+      path: '/orderan'
+      fullPath: '/orderan'
+      preLoaderRoute: typeof AppOrderanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jadwal': {
+      id: '/_app/jadwal'
+      path: '/jadwal'
+      fullPath: '/jadwal'
+      preLoaderRoute: typeof AppJadwalRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppJadwalRoute: typeof AppJadwalRoute
+  AppOrderanRoute: typeof AppOrderanRoute
+  AppTeknisiRoute: typeof AppTeknisiRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppJadwalRoute: AppJadwalRoute,
+  AppOrderanRoute: AppOrderanRoute,
+  AppTeknisiRoute: AppTeknisiRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
