@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
+import { Route as AppStokRouteImport } from './routes/_app.stok'
+import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
 import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
 import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
 
@@ -29,6 +31,16 @@ const AppTeknisiRoute = AppTeknisiRouteImport.update({
   path: '/teknisi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStokRoute = AppStokRouteImport.update({
+  id: '/stok',
+  path: '/stok',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRiwayatRoute = AppRiwayatRouteImport.update({
+  id: '/riwayat',
+  path: '/riwayat',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOrderanRoute = AppOrderanRouteImport.update({
   id: '/orderan',
   path: '/orderan',
@@ -44,12 +56,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/jadwal': typeof AppJadwalRoute
   '/orderan': typeof AppOrderanRoute
+  '/riwayat': typeof AppRiwayatRoute
+  '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/jadwal': typeof AppJadwalRoute
   '/orderan': typeof AppOrderanRoute
+  '/riwayat': typeof AppRiwayatRoute
+  '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRoutesById {
@@ -58,19 +74,23 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/orderan': typeof AppOrderanRoute
+  '/_app/riwayat': typeof AppRiwayatRoute
+  '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jadwal' | '/orderan' | '/teknisi'
+  fullPaths: '/' | '/jadwal' | '/orderan' | '/riwayat' | '/stok' | '/teknisi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jadwal' | '/orderan' | '/teknisi'
+  to: '/' | '/jadwal' | '/orderan' | '/riwayat' | '/stok' | '/teknisi'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/_app/jadwal'
     | '/_app/orderan'
+    | '/_app/riwayat'
+    | '/_app/stok'
     | '/_app/teknisi'
   fileRoutesById: FileRoutesById
 }
@@ -102,6 +122,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeknisiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/stok': {
+      id: '/_app/stok'
+      path: '/stok'
+      fullPath: '/stok'
+      preLoaderRoute: typeof AppStokRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/riwayat': {
+      id: '/_app/riwayat'
+      path: '/riwayat'
+      fullPath: '/riwayat'
+      preLoaderRoute: typeof AppRiwayatRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/orderan': {
       id: '/_app/orderan'
       path: '/orderan'
@@ -122,12 +156,16 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppJadwalRoute: typeof AppJadwalRoute
   AppOrderanRoute: typeof AppOrderanRoute
+  AppRiwayatRoute: typeof AppRiwayatRoute
+  AppStokRoute: typeof AppStokRoute
   AppTeknisiRoute: typeof AppTeknisiRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppJadwalRoute: AppJadwalRoute,
   AppOrderanRoute: AppOrderanRoute,
+  AppRiwayatRoute: AppRiwayatRoute,
+  AppStokRoute: AppStokRoute,
   AppTeknisiRoute: AppTeknisiRoute,
 }
 
@@ -140,3 +178,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
