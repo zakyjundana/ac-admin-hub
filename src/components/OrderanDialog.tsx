@@ -31,7 +31,7 @@ const empty = (date: string): FormState => ({
 });
 
 export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknisi }: Props) {
-  const [form, setForm] = useState(() => empty(defaultDate || new Date().toISOString().slice(0, 10)));
+  const [form, setForm] = useState<FormState>(() => empty(defaultDate || new Date().toISOString().slice(0, 10)));
 
   useEffect(() => {
     if (open) {
