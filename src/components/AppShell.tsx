@@ -4,10 +4,10 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", label: "Manajemen Jadwal", icon: Calendar },
+  { to: "/jadwal", label: "Manajemen Jadwal", icon: Calendar },
   { to: "/orderan", label: "Orderan", icon: ClipboardList },
   { to: "/teknisi", label: "Teknisi", icon: Users },
-];
+] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
