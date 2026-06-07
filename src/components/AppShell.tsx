@@ -27,7 +27,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
+        <Link to="/" className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border hover:bg-sidebar-accent transition-colors">
           <div className="size-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
             <Snowflake className="size-5" />
           </div>
@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="font-bold text-sidebar-foreground leading-tight">CoolService</div>
             <div className="text-xs text-muted-foreground">Admin Dashboard</div>
           </div>
-        </div>
+        </Link>
         <nav className="flex-1 p-3 space-y-1">
           {nav.map((item) => {
             const active = pathname === item.to;
@@ -79,12 +79,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-85 transition-opacity">
             <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-primary-foreground">
               <Snowflake className="size-4" />
             </div>
             <span className="font-bold">CoolService</span>
-          </div>
+          </Link>
           <div className="size-9" />
         </header>
         <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">{children}</main>

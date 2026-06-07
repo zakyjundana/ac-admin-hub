@@ -18,7 +18,7 @@ import { type Orderan, type SparePart, dataKeuanganHistoris } from "@/lib/mockDa
 
 const FinancialChart = lazy(() => import("@/components/FinancialChart"));
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_app/")({
   head: () => ({ meta: [{ title: "Dashboard Analitik — CoolService" }] }),
   component: DashboardPage,
 });
@@ -257,7 +257,7 @@ function DashboardPage() {
             </h3>
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="bg-accent/40 border border-border/40 rounded-xl p-3.5">
-                <span className="text-xs text-muted-foreground">Orderan Aktif</span>
+                <span className="text-xs text-muted-foreground">Orderan Tanggal</span>
                 <div className="text-2xl font-bold mt-1 text-primary">{activeOrdersCount}</div>
               </div>
               <div className="bg-accent/40 border border-border/40 rounded-xl p-3.5">

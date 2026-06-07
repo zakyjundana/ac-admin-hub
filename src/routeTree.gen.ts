@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
 import { Route as AppStokRouteImport } from './routes/_app.stok'
 import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
@@ -23,10 +23,10 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTeknisiRoute = AppTeknisiRouteImport.update({
   id: '/teknisi',
@@ -65,7 +65,7 @@ const AppJadwalRoute = AppJadwalRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -75,7 +75,6 @@ export interface FileRoutesByFullPath {
   '/teknisi': typeof AppTeknisiRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -83,10 +82,10 @@ export interface FileRoutesByTo {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/keuangan': typeof AppKeuanganRoute
@@ -95,6 +94,7 @@ export interface FileRoutesById {
   '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,7 +109,6 @@ export interface FileRouteTypes {
     | '/teknisi'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
@@ -117,9 +116,9 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
+    | '/'
   id:
     | '__root__'
-    | '/'
     | '/_app'
     | '/_app/jadwal'
     | '/_app/keuangan'
@@ -128,10 +127,10 @@ export interface FileRouteTypes {
     | '/_app/riwayat'
     | '/_app/stok'
     | '/_app/teknisi'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
 }
 
@@ -144,12 +143,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/teknisi': {
       id: '/_app/teknisi'
@@ -211,6 +210,7 @@ interface AppRouteChildren {
   AppRiwayatRoute: typeof AppRiwayatRoute
   AppStokRoute: typeof AppStokRoute
   AppTeknisiRoute: typeof AppTeknisiRoute
+  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -221,12 +221,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppRiwayatRoute: AppRiwayatRoute,
   AppStokRoute: AppStokRoute,
   AppTeknisiRoute: AppTeknisiRoute,
+  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
