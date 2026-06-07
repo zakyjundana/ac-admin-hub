@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { signOut, isSupabaseConfigured } from "@/lib/auth";
+import { useAuth } from "@/hooks/useAuth";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -41,6 +42,7 @@ async function handleLogout() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -95,8 +97,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Footer / Logout */}
-        <div className="p-2.5 border-t border-sidebar-border">
+        {/* Profile + Logout */}
+        <div className="p-2.5 border-t border-sidebar-border space-y-1">
+          {user && (
+            <div className="px-3 py-2.5 rounded-lg bg-sidebar-accent/50 mb-1">
+              <div className="flex items-center gap-2.5">
+                <div className="size-7 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-[10px] font-bold text-primary-foreground flex-shrink-0">
+                  {(user.nama || user.email || "?").slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-sidebar-foreground truncate">
+                    {user.nama || user.email?.split("@")[0] || "Pengguna"}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground truncate">
+                    {user.namaBisnis || "CoolService"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
@@ -104,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <LogOut className="size-4" />
             <span>Keluar</span>
           </button>
-          <p className="text-[10px] text-muted-foreground/40 text-center mt-2">
+          <p className="text-[10px] text-muted-foreground/40 text-center pt-1">
             © 2026 CoolService
           </p>
         </div>

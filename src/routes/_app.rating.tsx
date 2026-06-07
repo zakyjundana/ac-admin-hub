@@ -22,15 +22,16 @@ export const Route = createFileRoute("/_app/rating")({
   component: RatingPage,
 });
 
-const StarRating = ({ rating, size = 4 }: { rating: number; size?: number }) => {
+const StarRating = ({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) => {
+  const sizeClass = size === "sm" ? "size-3" : "size-4";
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => {
         const active = i < Math.round(rating);
         return (
-          <Star 
-            key={i} 
-            className={`size-${size} ${active ? "fill-warning text-warning" : "text-border fill-muted/20"}`} 
+          <Star
+            key={i}
+            className={`${sizeClass} ${active ? "fill-warning text-warning" : "text-border fill-muted/20"}`}
           />
         );
       })}
@@ -119,7 +120,7 @@ function RatingPage() {
   }, [feedback, selectedTeknisiId, selectedRating, searchQuery, teknisi]);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Rating & Feedback</h1>
@@ -143,7 +144,7 @@ function RatingPage() {
             <span className="text-xs text-muted-foreground">/ 5.0</span>
           </div>
           <div className="mt-2 text-xs">
-            <StarRating rating={overallStats.avg} size={3} />
+            <StarRating rating={overallStats.avg} size="sm" />
           </div>
         </div>
 

@@ -138,7 +138,7 @@ function DashboardPage() {
   }, [sparepart]);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Dashboard Analitik</h1>
