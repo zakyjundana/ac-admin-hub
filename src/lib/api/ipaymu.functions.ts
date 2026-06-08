@@ -122,3 +122,24 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       };
     }
   });
+
+// Server function to check outbound IP of the backend server
+export const checkOutboundIP = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      console.log("Checking outbound IP of server...");
+      const response = await fetch("https://api.ipify.org?format=json");
+      const data = await response.json();
+      return {
+        success: true,
+        ip: data.ip as string,
+      };
+    } catch (err: any) {
+      console.error("Failed to check outbound IP:", err);
+      return {
+        success: false,
+        message: err.message || "Failed to fetch outbound IP",
+      };
+    }
+  });
+

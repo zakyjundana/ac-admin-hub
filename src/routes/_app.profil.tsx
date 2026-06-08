@@ -12,7 +12,8 @@ import {
   Save,
   Loader2,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { updateProfile, isSupabaseConfigured } from "@/lib/auth";
-import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
+import { createIPaymuPayment, checkOutboundIP } from "@/lib/api/ipaymu.functions";
 import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/_app/profil")({
@@ -121,6 +122,22 @@ function ProfilPage() {
   };
 
   const ipaymuFn = useServerFn(createIPaymuPayment);
+  const checkIPFn = useServerFn(checkOutboundIP);
+  const [outboundIP, setOutboundIP] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkIPFn()
+      .then((res: any) => {
+        if (res.success && res.ip) {
+          setOutboundIP(res.ip);
+        } else {
+          setOutboundIP("Gagal memuat IP");
+        }
+      })
+      .catch(() => {
+        setOutboundIP("Gagal memuat IP");
+      });
+  }, [checkIPFn]);
 
   const handleUpgrade = async (plan: "starter" | "pro") => {
     if (!user) {
@@ -434,6 +451,45 @@ function ProfilPage() {
             <div className="flex items-start gap-2 text-[10px] text-muted-foreground/60 bg-muted/20 p-2.5 rounded-lg border border-border">
               <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
               <span>Jika Anda mengalami kendala pembayaran, harap hubungi layanan bantuan kami.</span>
+            </div>
+          </div>
+
+          {/* IP Outbound Info for iPaymu */}
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 className="font-bold text-sm flex items-center gap-2">
+              <Globe className="w-4 h-4 text-primary" />
+              IP Outbound Server (Untuk iPaymu)
+            </h3>
+            
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              iPaymu memerlukan IP Outbound server Anda untuk whitelist penerimaan webhook callback notifikasi transaksi.
+            </p>
+
+            <div className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-1.5">
+              <span className="text-[10px] text-muted-foreground uppercase font-semibold">Alamat IP Outbound:</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-sm text-foreground font-bold break-all">
+                  {outboundIP || "Memuat..."}
+                </span>
+                {outboundIP && outboundIP !== "Gagal memuat IP" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs px-2.5 shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(outboundIP);
+                      toast.success("IP Outbound berhasil disalin!");
+                    }}
+                  >
+                    Salin IP
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground/60 bg-muted/10 p-2.5 rounded-lg border border-border">
+              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              <span>IP ini diperoleh secara real-time dari server backend tempat aplikasi dijalankan saat ini. Silakan masukkan IP ini pada kolom "IP Website (IP Outbound Back-End)" di dashboard verifikasi iPaymu Anda.</span>
             </div>
           </div>
         </div>
