@@ -12,9 +12,11 @@ import {
   Plus,
   Trash2,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { isSupabaseConfigured } from "@/lib/auth";
+import { store } from "@/lib/dataStore";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
@@ -63,6 +65,7 @@ export default function OnboardingPage() {
   async function handleFinish() {
     setLoading(true);
     try {
+      let userId: string | null = null;
       if (isSupabaseConfigured()) {
         // 1. Simpan profil bisnis ke user metadata
         await supabase.auth.updateUser({
@@ -78,6 +81,7 @@ export default function OnboardingPage() {
         // 2. Simpan teknisi ke tabel ac_teknisi
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          userId = user.id;
           const teknisiPayload = teknisiList
             .filter((t) => t.nama && t.noHp && t.wilayah)
             .map((t) => ({
@@ -90,7 +94,24 @@ export default function OnboardingPage() {
             await supabase.from("ac_teknisi").insert(teknisiPayload);
           }
         }
+      } else {
+        userId = "demo-user-id";
       }
+
+      // Sync data store and save the technician to user's storage
+      if (userId) {
+        store.syncUser(userId);
+        teknisiList.forEach((t) => {
+          if (t.nama && t.noHp && t.wilayah) {
+            store.addTeknisi({
+              nama: t.nama,
+              no_hp: t.noHp,
+              wilayah: t.wilayah,
+            });
+          }
+        });
+      }
+
       // Mode demo atau sukses → ke dashboard
       setStep(3);
     } catch (err) {
@@ -220,10 +241,14 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            <button type="button" onClick={addTeknisi}
-              className="mt-4 w-full flex items-center justify-center gap-2 text-sm text-blue-400 hover:text-blue-300 py-2.5 rounded-xl border border-dashed border-blue-500/30 hover:border-blue-500/50 transition-all">
-              <Plus className="w-4 h-4" /> Tambah Teknisi Lain
-            </button>
+            <div className="mt-5 p-4 rounded-xl border border-dashed border-white/5 bg-white/[0.01] flex flex-col items-center text-center">
+              <span className="text-xs text-amber-400/90 font-bold flex items-center gap-1.5 mb-1.5">
+                <Lock className="w-3.5 h-3.5" /> Tambah Teknisi Lain (Fitur Premium)
+              </span>
+              <p className="text-[11px] text-gray-500 max-w-xs leading-relaxed">
+                Akun gratis terdaftar saat ini terbatas untuk 1 teknisi. Anda dapat meng-upgrade ke paket Starter/Pro setelah pendaftaran untuk menambah teknisi lainnya.
+              </p>
+            </div>
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setStep(1)}

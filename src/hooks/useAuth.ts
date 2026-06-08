@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { isSupabaseConfigured, getCurrentUser, type AuthUser } from "@/lib/auth";
+import { store } from "@/lib/dataStore";
 
 type AuthState = {
   user: AuthUser | null;
@@ -13,6 +14,7 @@ export function useAuth(): AuthState {
   useEffect(() => {
     if (!isSupabaseConfigured()) {
       getCurrentUser().then((u) => {
+        store.syncUser(null); // Demo mode uses default mock data
         setState({
           loading: false,
           user: u,
@@ -24,6 +26,7 @@ export function useAuth(): AuthState {
     // Ambil sesi awal
     supabase.auth.getSession().then(({ data }) => {
       const u = data.session?.user ?? null;
+      store.syncUser(u?.id ?? null); // Sync data store to the user
       setState({
         loading: false,
         user: u
@@ -43,6 +46,7 @@ export function useAuth(): AuthState {
     // Dengarkan perubahan auth state
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
+      store.syncUser(u?.id ?? null); // Sync data store to the user on change
       setState({
         loading: false,
         user: u

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isSupabaseConfigured } from "./auth";
 import {
   initialOrderan,
   initialTeknisi,
@@ -28,6 +29,8 @@ let state: State = {
   riwayat: initialRiwayat,
   feedback: initialFeedback,
 };
+
+let currentUserId: string | null = null;
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((l) => l());
@@ -38,9 +41,52 @@ export const store = {
     listeners.add(l);
     return () => listeners.delete(l);
   },
+
+  // Synchronize store with the logged-in user
+  syncUser: (userId: string | null) => {
+    currentUserId = userId;
+    if (!isSupabaseConfigured() || !userId) {
+      // Demo mode or logged out -> use mock data
+      state = {
+        teknisi: initialTeknisi,
+        orderan: initialOrderan,
+        sparepart: initialSparePart,
+        riwayat: initialRiwayat,
+        feedback: initialFeedback,
+      };
+    } else {
+      // Registered user -> load from localStorage, otherwise start empty
+      const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + userId) : null;
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+        } catch {
+          state = { teknisi: [], orderan: [], sparepart: [], riwayat: [], feedback: [] };
+        }
+      } else {
+        state = {
+          teknisi: [],
+          orderan: [],
+          sparepart: [],
+          riwayat: [],
+          feedback: [],
+        };
+      }
+    }
+    emit();
+  },
+
+  // Save helper
+  saveState: () => {
+    if (isSupabaseConfigured() && currentUserId && typeof window !== "undefined") {
+      localStorage.setItem("coolservice_store_" + currentUserId, JSON.stringify(state));
+    }
+  },
+
   // ---- Orderan
   addOrderan: (o: Omit<Orderan, "id">) => {
     state = { ...state, orderan: [...state.orderan, { ...o, id: `o${Date.now()}` }] };
+    store.saveState();
     emit();
   },
   updateOrderan: (id: string, patch: Partial<Orderan>) => {
@@ -81,24 +127,29 @@ export const store = {
         state = { ...state, riwayat: [...state.riwayat, r] };
       }
     }
+    store.saveState();
     emit();
   },
   deleteOrderan: (id: string) => {
     state = { ...state, orderan: state.orderan.filter((o) => o.id !== id) };
+    store.saveState();
     emit();
   },
   // ---- Teknisi
   addTeknisi: (t: Omit<Teknisi, "id">) => {
     state = { ...state, teknisi: [...state.teknisi, { ...t, id: `t${Date.now()}` }] };
+    store.saveState();
     emit();
   },
   deleteTeknisi: (id: string) => {
     state = { ...state, teknisi: state.teknisi.filter((t) => t.id !== id) };
+    store.saveState();
     emit();
   },
   // ---- Spare Part
   addSparePart: (s: Omit<SparePart, "id">) => {
     state = { ...state, sparepart: [...state.sparepart, { ...s, id: `sp${Date.now()}` }] };
+    store.saveState();
     emit();
   },
   updateSparePart: (id: string, patch: Partial<SparePart>) => {
@@ -106,10 +157,12 @@ export const store = {
       ...state,
       sparepart: state.sparepart.map((s) => (s.id === id ? { ...s, ...patch } : s)),
     };
+    store.saveState();
     emit();
   },
   deleteSparePart: (id: string) => {
     state = { ...state, sparepart: state.sparepart.filter((s) => s.id !== id) };
+    store.saveState();
     emit();
   },
   adjustStok: (id: string, delta: number) => {
@@ -119,24 +172,29 @@ export const store = {
         s.id === id ? { ...s, stok: Math.max(0, s.stok + delta) } : s,
       ),
     };
+    store.saveState();
     emit();
   },
   // ---- Riwayat
   addRiwayat: (r: Omit<RiwayatKerusakan, "id">) => {
     state = { ...state, riwayat: [...state.riwayat, { ...r, id: `r${Date.now()}` }] };
+    store.saveState();
     emit();
   },
   deleteRiwayat: (id: string) => {
     state = { ...state, riwayat: state.riwayat.filter((r) => r.id !== id) };
+    store.saveState();
     emit();
   },
   // ---- Feedback
   addFeedback: (f: Omit<Feedback, "id">) => {
     state = { ...state, feedback: [...state.feedback, { ...f, id: `f${Date.now()}` }] };
+    store.saveState();
     emit();
   },
   deleteFeedback: (id: string) => {
     state = { ...state, feedback: state.feedback.filter((f) => f.id !== id) };
+    store.saveState();
     emit();
   },
 };
