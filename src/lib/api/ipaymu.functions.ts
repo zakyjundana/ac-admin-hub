@@ -41,7 +41,7 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       description: [`Langganan Bulanan ${planLabel}`],
       returnUrl: `${data.origin}/profil?payment=success`,
       cancelUrl: `${data.origin}/profil?payment=cancel`,
-      notifyUrl: `${data.origin}/api/ipaymu-webhook`,
+      notifyUrl: `${data.origin}/api/public/ipaymu-webhook`,
       referenceId: `${data.userId}:${data.planName}`,
       buyerName: data.nama,
       buyerEmail: data.email,
