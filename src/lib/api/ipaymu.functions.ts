@@ -57,7 +57,8 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
         .toLowerCase();
       const timestamp = new Date()
         .toISOString()
-        .replace(/\.\d{3}/, "");
+        .slice(0, 19)
+        .replace(/[^0-9]/g, ""); // Format: YYYYMMDDhhmmss
       const stringToSign = `POST:${va}:${bodyHash}:${timestamp}`;
       const signature = crypto
         .createHmac("sha256", apiKey)
