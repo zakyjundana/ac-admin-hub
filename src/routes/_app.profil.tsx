@@ -76,6 +76,8 @@ function ProfilPage() {
     }
   };
 
+  const ipaymuFn = useServerFn(createIPaymuPayment);
+
   const handleUpgrade = async (plan: "starter" | "pro") => {
     if (!user) {
       toast.error("Silakan masuk terlebih dahulu.");
@@ -83,7 +85,7 @@ function ProfilPage() {
     }
     setLoadingUpgrade(plan);
     try {
-      const res = await createIPaymuPayment({
+      const res = await ipaymuFn({
         data: {
           userId: user.id,
           email: user.email || "",
