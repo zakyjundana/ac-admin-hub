@@ -16,6 +16,12 @@ import {
 import { signUp, isSupabaseConfigured } from "@/lib/auth";
 
 export const Route = createFileRoute("/register")({
+  head: () => ({
+    meta: [
+      { title: "Daftar Akun Baru - CoolService" },
+      { name: "description", content: "Daftar akun CoolService secara gratis sekarang dan mulai kelola teknisi serta orderan AC Anda dengan lebih mudah." },
+    ],
+  }),
   component: RegisterPage,
 });
 

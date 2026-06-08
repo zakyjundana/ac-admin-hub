@@ -18,6 +18,14 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/landing")({
+  head: () => ({
+    meta: [
+      { title: "CoolService - Kelola Teknisi & Orderan AC Lebih Rapi" },
+      { name: "description", content: "Aplikasi manajemen operasional bisnis service AC terlengkap di Indonesia. Atur jadwal teknisi, invoice, and monitoring stok dalam satu dashboard." },
+      { property: "og:title", content: "CoolService - Kelola Teknisi & Orderan AC Lebih Rapi" },
+      { property: "og:description", content: "Aplikasi manajemen operasional bisnis service AC terlengkap di Indonesia." },
+    ],
+  }),
   component: LandingPage,
 });
 

@@ -13,6 +13,12 @@ import {
 import { signIn, isSupabaseConfigured } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Masuk ke Dashboard - CoolService" },
+      { name: "description", content: "Masuk ke akun admin CoolService untuk mengelola operasional bisnis service AC." },
+    ],
+  }),
   component: LoginPage,
 });
 

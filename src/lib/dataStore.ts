@@ -47,7 +47,9 @@ export const store = {
   // Check if we are currently in demo mode
   isDemoMode: () => {
     if (!isSupabaseConfigured() || !currentUserId) return true;
-    return typeof window !== "undefined" && localStorage.getItem("coolservice_demo_mode_" + currentUserId) === "true";
+    // Default to live mode (false) unless user explicitly turned on demo mode
+    const stored = typeof window !== "undefined" ? localStorage.getItem("coolservice_demo_mode_" + currentUserId) : null;
+    return stored === "true";
   },
 
   // Set demo mode status
@@ -61,7 +63,14 @@ export const store = {
   // Synchronize store with the logged-in user
   syncUser: (userId: string | null) => {
     currentUserId = userId;
-    const isDemo = !isSupabaseConfigured() || !userId || (typeof window !== "undefined" && localStorage.getItem("coolservice_demo_mode_" + userId) === "true");
+    // isDemo = true only when: not configured, no userId, OR user explicitly set demo=true
+    // A missing/null key means live mode for authenticated users
+    const storedDemo = userId && typeof window !== "undefined" ? localStorage.getItem("coolservice_demo_mode_" + userId) : null;
+    // If authenticated user has never set a preference, default to live mode and persist it
+    if (userId && storedDemo === null && isSupabaseConfigured() && typeof window !== "undefined") {
+      localStorage.setItem("coolservice_demo_mode_" + userId, "false");
+    }
+    const isDemo = !isSupabaseConfigured() || !userId || storedDemo === "true";
 
     if (isDemo) {
       // Demo mode or logged out -> use mock data

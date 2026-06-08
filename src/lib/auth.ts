@@ -42,6 +42,10 @@ export async function signIn(email: string, password: string) {
     password,
   });
   if (error) throw error;
+  // Auto-disable demo mode for verified users upon login
+  if (data.user?.id && typeof window !== "undefined") {
+    localStorage.setItem("coolservice_demo_mode_" + data.user.id, "false");
+  }
   return data;
 }
 
