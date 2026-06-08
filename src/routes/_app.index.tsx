@@ -11,10 +11,18 @@ import {
   ArrowDownRight, 
   Wallet,
   Activity,
-  PackageCheck
+  PackageCheck,
+  Share2,
+  Copy,
+  Send
 } from "lucide-react";
 import { useStore } from "@/lib/dataStore";
 import { type Orderan, type SparePart, dataKeuanganHistoris } from "@/lib/mockData";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
 
 const FinancialChart = lazy(() => import("@/components/FinancialChart"));
 
@@ -27,6 +35,9 @@ const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 
 function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
+  const { user } = useAuth();
+  const [showShare, setShowShare] = useState(false);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -140,11 +151,16 @@ function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Dashboard Analitik</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Pantau kesehatan keuangan, kepuasan pelanggan, dan performa bisnis CoolService Anda secara real-time.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Dashboard Analitik</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pantau kesehatan keuangan, kepuasan pelanggan, dan performa bisnis CoolService Anda secara real-time.
+          </p>
+        </div>
+        <Button onClick={() => setShowShare(true)} variant="outline" className="shadow-sm border-primary/20 text-primary hover:bg-primary/5 h-10 px-4 rounded-xl flex items-center gap-2 shrink-0">
+          <Share2 className="size-4" /> Bagikan Link Booking
+        </Button>
       </div>
 
       {/* KPI Widgets */}
@@ -306,6 +322,69 @@ function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Dialog Share Booking Link */}
+      <Dialog open={showShare} onOpenChange={setShowShare}>
+        <DialogContent className="max-w-md bg-[#0f0f15] border border-white/5 text-white shadow-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-primary" />
+              Bagikan Tautan Booking Mandiri
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-gray-400">
+              Klien Anda dapat memilih tanggal & waktu servis AC secara langsung melalui tautan kalender berikut.
+            </p>
+            
+            <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2">
+              <span className="text-xs text-primary truncate select-all">
+                {typeof window !== "undefined" 
+                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
+                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-gray-400 hover:text-white shrink-0"
+                onClick={() => {
+                  const url = typeof window !== "undefined" 
+                    ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
+                    : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success("Link berhasil disalin!");
+                }}
+              >
+                <Copy className="size-4" />
+              </Button>
+            </div>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:flex-1 text-xs border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+              onClick={() => setShowShare(false)}
+            >
+              Tutup
+            </Button>
+            <Button
+              size="sm"
+              className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold"
+              onClick={() => {
+                const url = typeof window !== "undefined" 
+                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
+                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
+                const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${url}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
+                setShowShare(false);
+              }}
+            >
+              <Send className="size-3.5" /> Kirim via WA
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

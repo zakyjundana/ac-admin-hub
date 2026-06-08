@@ -23,6 +23,7 @@ export interface Orderan {
   jam: string; // HH:mm
   garansi_hari?: number; // masa garansi setelah selesai (default 30)
   spare_parts?: { sparepart_id: string; qty: number }[];
+  sumber?: "Admin" | "Mandiri"; // Asal pemesanan
 }
 
 // ===== Fase 2: Spare Parts =====

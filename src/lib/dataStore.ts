@@ -130,9 +130,33 @@ export const store = {
 
   // ---- Orderan
   addOrderan: (o: Omit<Orderan, "id">) => {
-    state = { ...state, orderan: [...state.orderan, { ...o, id: `o${Date.now()}` }] };
+    state = { ...state, orderan: [...state.orderan, { ...o, id: `o${Date.now()}`, sumber: "Admin" }] };
     store.saveState();
     emit();
+  },
+  addClientBooking: (shopId: string, o: Omit<Orderan, "id">) => {
+    const booking = { ...o, id: `o${Date.now()}`, sumber: "Mandiri" as const };
+    if (currentUserId === shopId) {
+      state = { ...state, orderan: [...state.orderan, booking] };
+      store.saveState();
+      emit();
+    } else {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + shopId) : null;
+      let shopState: any = { teknisi: [], orderan: [], sparepart: [], riwayat: [], feedback: [] };
+      if (saved) {
+        try {
+          shopState = JSON.parse(saved);
+        } catch {}
+      }
+      shopState.orderan = [...(shopState.orderan || []), booking];
+      if (typeof window !== "undefined") {
+        localStorage.setItem("coolservice_store_" + shopId, JSON.stringify(shopState));
+      }
+      if (!currentUserId || currentUserId === "demo-user-id" || shopId === "demo-user-id") {
+        state = { ...state, orderan: [...state.orderan, booking] };
+        emit();
+      }
+    }
   },
   updateOrderan: (id: string, patch: Partial<Orderan>) => {
     const prev = state.orderan.find((o) => o.id === id);
