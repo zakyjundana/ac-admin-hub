@@ -6,6 +6,8 @@ export type AuthUser = {
   nama?: string;
   namaBisnis?: string;
   noHp?: string;
+  subscriptionTier?: "free" | "starter" | "pro";
+  subscriptionStatus?: string;
 };
 
 /** Daftar akun baru */
@@ -24,6 +26,8 @@ export async function signUp(params: {
         nama: params.nama,
         nama_bisnis: params.namaBisnis,
         no_hp: params.noHp,
+        subscription_tier: "free",
+        subscription_status: "active",
       },
     },
   });
@@ -63,6 +67,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     nama: data.user.user_metadata?.nama,
     namaBisnis: data.user.user_metadata?.nama_bisnis,
     noHp: data.user.user_metadata?.no_hp,
+    subscriptionTier: data.user.user_metadata?.subscription_tier || "free",
+    subscriptionStatus: data.user.user_metadata?.subscription_status || "active",
   };
 }
 

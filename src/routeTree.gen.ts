@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as ApiIpaymuWebhookRouteImport } from './routes/api.ipaymu-webhook'
 import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
 import { Route as AppStokRouteImport } from './routes/_app.stok'
 import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
@@ -51,6 +52,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiIpaymuWebhookRoute = ApiIpaymuWebhookRouteImport.update({
+  id: '/api/ipaymu-webhook',
+  path: '/api/ipaymu-webhook',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppTeknisiRoute = AppTeknisiRouteImport.update({
   id: '/teknisi',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
+  '/api/ipaymu-webhook': typeof ApiIpaymuWebhookRoute
 }
 export interface FileRoutesByTo {
   '/landing': typeof LandingRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
+  '/api/ipaymu-webhook': typeof ApiIpaymuWebhookRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
+  '/api/ipaymu-webhook': typeof ApiIpaymuWebhookRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
+    | '/api/ipaymu-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/landing'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
+    | '/api/ipaymu-webhook'
     | '/'
   id:
     | '__root__'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_app/riwayat'
     | '/_app/stok'
     | '/_app/teknisi'
+    | '/api/ipaymu-webhook'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   RegisterRoute: typeof RegisterRoute
+  ApiIpaymuWebhookRoute: typeof ApiIpaymuWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -229,6 +242,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/ipaymu-webhook': {
+      id: '/api/ipaymu-webhook'
+      path: '/api/ipaymu-webhook'
+      fullPath: '/api/ipaymu-webhook'
+      preLoaderRoute: typeof ApiIpaymuWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/teknisi': {
       id: '/_app/teknisi'
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   RegisterRoute: RegisterRoute,
+  ApiIpaymuWebhookRoute: ApiIpaymuWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

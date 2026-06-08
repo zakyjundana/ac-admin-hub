@@ -23,6 +23,8 @@ export function useAuth(): AuthState {
               nama: u.user_metadata?.nama,
               namaBisnis: u.user_metadata?.nama_bisnis,
               noHp: u.user_metadata?.no_hp,
+              subscriptionTier: u.user_metadata?.subscription_tier || "free",
+              subscriptionStatus: u.user_metadata?.subscription_status || "active",
             }
           : null,
       });
@@ -40,6 +42,8 @@ export function useAuth(): AuthState {
               nama: u.user_metadata?.nama,
               namaBisnis: u.user_metadata?.nama_bisnis,
               noHp: u.user_metadata?.no_hp,
+              subscriptionTier: u.user_metadata?.subscription_tier || "free",
+              subscriptionStatus: u.user_metadata?.subscription_status || "active",
             }
           : null,
       });
