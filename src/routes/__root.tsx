@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "CoolService - Dashboard Bisnis Service AC" },
+      { name: "description", content: "Dashboard admin service AC untuk kelola jadwal teknisi, zoning wilayah, potong stok sparepart otomatis, hitung insentif harian, & integrasi WhatsApp." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "CoolService - Dashboard Bisnis Service AC" },
+      { property: "og:description", content: "Dashboard admin service AC untuk kelola jadwal teknisi, zoning wilayah, potong stok sparepart otomatis, hitung insentif harian, & integrasi WhatsApp." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "CoolService - Dashboard Bisnis Service AC" },
+      { name: "twitter:description", content: "Dashboard admin service AC untuk kelola jadwal teknisi, zoning wilayah, potong stok sparepart otomatis, hitung insentif harian, & integrasi WhatsApp." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e84d5774-0485-453a-9c1a-44b9584c1315" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e84d5774-0485-453a-9c1a-44b9584c1315" },
     ],
     links: [
       {
