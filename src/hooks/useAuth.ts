@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import type { AuthUser } from "@/lib/auth";
+import { isSupabaseConfigured, getCurrentUser, type AuthUser } from "@/lib/auth";
 
 type AuthState = {
   user: AuthUser | null;
@@ -11,6 +11,16 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      getCurrentUser().then((u) => {
+        setState({
+          loading: false,
+          user: u,
+        });
+      });
+      return;
+    }
+
     // Ambil sesi awal
     supabase.auth.getSession().then(({ data }) => {
       const u = data.session?.user ?? null;

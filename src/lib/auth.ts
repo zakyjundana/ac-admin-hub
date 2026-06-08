@@ -59,6 +59,28 @@ export async function getSession() {
 
 /** Ambil user saat ini */
 export async function getCurrentUser(): Promise<AuthUser | null> {
+  if (!isSupabaseConfigured()) {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("demo_user_profile");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+    return {
+      id: "demo-user-id",
+      email: "demo@coolservice.com",
+      nama: "Budi Santoso",
+      namaBisnis: "CoolService Mandiri",
+      noHp: "081234567890",
+      subscriptionTier: "free",
+      subscriptionStatus: "active",
+    };
+  }
+
   const { data } = await supabase.auth.getUser();
   if (!data.user) return null;
   return {
@@ -86,6 +108,22 @@ export async function updateProfile(params: {
   namaBisnis: string;
   noHp: string;
 }) {
+  if (!isSupabaseConfigured()) {
+    if (typeof window !== "undefined") {
+      const demoUser: AuthUser = {
+        id: "demo-user-id",
+        email: "demo@coolservice.com",
+        nama: params.nama,
+        namaBisnis: params.namaBisnis,
+        noHp: params.noHp,
+        subscriptionTier: "free",
+        subscriptionStatus: "active",
+      };
+      localStorage.setItem("demo_user_profile", JSON.stringify(demoUser));
+    }
+    return { user: null };
+  }
+
   const { data, error } = await supabase.auth.updateUser({
     data: {
       nama: params.nama,
