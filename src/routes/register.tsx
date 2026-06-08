@@ -335,9 +335,9 @@ export default function RegisterPage() {
 
             <p className="text-xs text-center text-gray-600 pt-1">
               Dengan mendaftar, Anda menyetujui{" "}
-              <a href="#" className="text-blue-500 hover:underline">Syarat & Ketentuan</a>{" "}
+              <Link to="/terms" className="text-blue-500 hover:underline">Syarat & Ketentuan</Link>{" "}
               dan{" "}
-              <a href="#" className="text-blue-500 hover:underline">Kebijakan Privasi</a> kami.
+              <Link to="/refund" className="text-blue-500 hover:underline">Kebijakan Refund</Link> kami.
             </p>
           </form>
         </div>

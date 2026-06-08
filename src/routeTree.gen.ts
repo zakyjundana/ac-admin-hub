@@ -9,10 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LandingRouteImport } from './routes/landing'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
@@ -26,9 +29,19 @@ import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
 import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
 import { Route as ApiPublicIpaymuWebhookRouteImport } from './routes/api/public/ipaymu-webhook'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -44,6 +57,11 @@ const LoginRoute = LoginRouteImport.update({
 const LandingRoute = LandingRouteImport.update({
   id: '/landing',
   path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -109,10 +127,13 @@ const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/book': typeof BookRoute
+  '/faq': typeof FaqRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
+  '/terms': typeof TermsRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -125,10 +146,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/book': typeof BookRoute
+  '/faq': typeof FaqRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
+  '/terms': typeof TermsRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -144,10 +168,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/book': typeof BookRoute
+  '/faq': typeof FaqRoute
   '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
+  '/terms': typeof TermsRoute
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/keuangan': typeof AppKeuanganRoute
   '/_app/orderan': typeof AppOrderanRoute
@@ -164,10 +191,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/book'
+    | '/faq'
     | '/landing'
     | '/login'
     | '/onboarding'
+    | '/refund'
     | '/register'
+    | '/terms'
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
@@ -180,10 +210,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/book'
+    | '/faq'
     | '/landing'
     | '/login'
     | '/onboarding'
+    | '/refund'
     | '/register'
+    | '/terms'
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
@@ -198,10 +231,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/book'
+    | '/faq'
     | '/landing'
     | '/login'
     | '/onboarding'
+    | '/refund'
     | '/register'
+    | '/terms'
     | '/_app/jadwal'
     | '/_app/keuangan'
     | '/_app/orderan'
@@ -217,20 +253,37 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   BookRoute: typeof BookRoute
+  FaqRoute: typeof FaqRoute
   LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  RefundRoute: typeof RefundRoute
   RegisterRoute: typeof RegisterRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicIpaymuWebhookRoute: typeof ApiPublicIpaymuWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -252,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/landing'
       fullPath: '/landing'
       preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book': {
@@ -370,10 +430,13 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   BookRoute: BookRoute,
+  FaqRoute: FaqRoute,
   LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  RefundRoute: RefundRoute,
   RegisterRoute: RegisterRoute,
+  TermsRoute: TermsRoute,
   ApiPublicIpaymuWebhookRoute: ApiPublicIpaymuWebhookRoute,
 }
 export const routeTree = rootRouteImport

@@ -388,9 +388,10 @@ export default function LandingPage() {
         </div>
         <p>© 2026 CoolService. Dibuat untuk tukang AC Indonesia.</p>
         <div className="flex justify-center gap-6 mt-3 text-xs">
-          <a href="#" className="hover:text-gray-400 transition-colors">Syarat & Ketentuan</a>
-          <a href="#" className="hover:text-gray-400 transition-colors">Kebijakan Privasi</a>
-          <a href="#" className="hover:text-gray-400 transition-colors flex items-center gap-1">
+          <Link to="/terms" className="hover:text-gray-400 transition-colors">Syarat & Ketentuan</Link>
+          <Link to="/refund" className="hover:text-gray-400 transition-colors">Kebijakan Refund</Link>
+          <Link to="/faq" className="hover:text-gray-400 transition-colors">FAQ</Link>
+          <a href="https://wa.me/628123456789" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors flex items-center gap-1">
             <Phone className="w-3 h-3" /> Hubungi Kami
           </a>
         </div>
