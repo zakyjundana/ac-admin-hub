@@ -15,12 +15,12 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const crypto = await import("node:crypto");
-    const process = await import("node:process");
+    const env = typeof process !== "undefined" ? process.env : {};
 
-    const apiKey = process.env.IPAYMU_API_KEY || "sandbox-api-key";
-    const va = process.env.IPAYMU_VA || "0000007890123456";
+    const apiKey = env.IPAYMU_API_KEY || "sandbox-api-key";
+    const va = env.IPAYMU_VA || "0000007890123456";
     const isSandbox =
-      process.env.IPAYMU_SANDBOX === "true" ||
+      env.IPAYMU_SANDBOX === "true" ||
       va.startsWith("0000") ||
       apiKey === "sandbox-api-key";
 
