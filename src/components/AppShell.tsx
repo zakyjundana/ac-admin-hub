@@ -55,11 +55,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
   const { user } = useAuth();
+  const displayUser = user || (!isSupabaseConfigured() ? {
+    id: "demo-user-id",
+    email: "demo@coolservice.com",
+    nama: "Budi Santoso",
+    namaBisnis: "CoolService Mandiri",
+    noHp: "081234567890",
+    subscriptionTier: "free" as const,
+    subscriptionStatus: "active",
+  } : null);
 
   const ipaymuFn = useServerFn(createIPaymuPayment);
 
   const handleUpgrade = async (plan: "starter" | "pro") => {
-    if (!user) {
+    if (!displayUser) {
       toast.error("Silakan masuk terlebih dahulu.");
       return;
     }
@@ -67,10 +76,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     try {
       const res = await ipaymuFn({
         data: {
-          userId: user.id,
-          email: user.email || "",
-          nama: user.nama || "Pengguna",
-          noHp: user.noHp || "",
+          userId: displayUser.id,
+          email: displayUser.email || "",
+          nama: displayUser.nama || "Pengguna",
+          noHp: displayUser.noHp || "",
           planName: plan,
           origin: window.location.origin,
         },
@@ -145,37 +154,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Profile + Logout */}
         <div className="p-2.5 border-t border-sidebar-border space-y-1">
-          {user && (
+          {displayUser && (
             <Link
               to="/profil"
               className="block px-3 py-2.5 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent border border-transparent hover:border-border transition-all duration-150 mb-1 cursor-pointer group"
             >
               <div className="flex items-center gap-2.5">
                 <div className="size-7 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-[10px] font-bold text-primary-foreground flex-shrink-0 group-hover:scale-105 transition-transform">
-                  {(user.nama || user.email || "?").slice(0, 1).toUpperCase()}
+                  {(displayUser.nama || displayUser.email || "?").slice(0, 1).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-semibold text-sidebar-foreground truncate flex items-center justify-between">
-                    <span className="truncate">{user.nama || user.email?.split("@")[0] || "Pengguna"}</span>
+                    <span className="truncate">{displayUser.nama || displayUser.email?.split("@")[0] || "Pengguna"}</span>
                     <ChevronRight className="size-3 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
                   </div>
                   <div className="text-[10px] text-muted-foreground truncate">
-                    {user.namaBisnis || "CoolService"}
+                    {displayUser.namaBisnis || "CoolService"}
                   </div>
                   
                   {/* Subscription Plan Badge */}
                   <div className="mt-1 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <span className={cn(
                       "inline-block text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded border",
-                      user.subscriptionTier === "pro"
+                      displayUser.subscriptionTier === "pro"
                         ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                        : user.subscriptionTier === "starter"
+                        : displayUser.subscriptionTier === "starter"
                         ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
                         : "bg-white/5 text-muted-foreground border-white/10"
                     )}>
-                      {user.subscriptionTier || "free"} Plan
+                      {displayUser.subscriptionTier || "free"} Plan
                     </span>
-                    {(user.subscriptionTier === "free" || user.subscriptionTier === "starter") && (
+                    {(displayUser.subscriptionTier === "free" || displayUser.subscriptionTier === "starter") && (
                       <button 
                         onClick={(e) => {
                           e.preventDefault();
@@ -236,10 +245,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                     <Button 
                       onClick={() => handleUpgrade("starter")}
-                      disabled={loadingUpgrade !== null || user?.subscriptionTier === "starter"}
+                      disabled={loadingUpgrade !== null || displayUser?.subscriptionTier === "starter"}
                       className="w-full bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg text-xs"
                     >
-                      {loadingUpgrade === "starter" ? "Memproses..." : user?.subscriptionTier === "starter" ? "Plan Aktif" : "Pilih Starter"}
+                      {loadingUpgrade === "starter" ? "Memproses..." : displayUser?.subscriptionTier === "starter" ? "Plan Aktif" : "Pilih Starter"}
                     </Button>
                   </div>
 
@@ -278,10 +287,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                     <Button 
                       onClick={() => handleUpgrade("pro")}
-                      disabled={loadingUpgrade !== null || user?.subscriptionTier === "pro"}
+                      disabled={loadingUpgrade !== null || displayUser?.subscriptionTier === "pro"}
                       className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-bold text-xs"
                     >
-                      {loadingUpgrade === "pro" ? "Memproses..." : user?.subscriptionTier === "pro" ? "Plan Aktif" : "Pilih Pro"}
+                      {loadingUpgrade === "pro" ? "Memproses..." : displayUser?.subscriptionTier === "pro" ? "Plan Aktif" : "Pilih Pro"}
                     </Button>
                   </div>
                 </div>
