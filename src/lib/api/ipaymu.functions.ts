@@ -128,7 +128,32 @@ export const checkOutboundIP = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       console.log("Checking outbound IPv4 of server...");
-      // Try api4.ipify.org first (IPv4 only)
+
+      // Try AWS checkip first (IPv4, hosted on AWS, not Cloudflare)
+      try {
+        const response = await fetch("https://checkip.amazonaws.com", { signal: AbortSignal.timeout(3000) });
+        const text = await response.text();
+        const ip = text.trim();
+        if (ip && !ip.includes(":")) {
+          return { success: true, ip };
+        }
+      } catch (e) {
+        console.warn("checkip.amazonaws.com failed...", e);
+      }
+
+      // Try ifconfig.me/ip (hosted on non-Cloudflare network)
+      try {
+        const response = await fetch("https://ifconfig.me/ip", { signal: AbortSignal.timeout(3000) });
+        const text = await response.text();
+        const ip = text.trim();
+        if (ip && !ip.includes(":")) {
+          return { success: true, ip };
+        }
+      } catch (e) {
+        console.warn("ifconfig.me/ip failed...", e);
+      }
+
+      // Try api4.ipify.org
       try {
         const response = await fetch("https://api4.ipify.org?format=json", { signal: AbortSignal.timeout(3000) });
         const data = await response.json();
@@ -136,10 +161,10 @@ export const checkOutboundIP = createServerFn({ method: "GET" })
           return { success: true, ip: data.ip as string };
         }
       } catch (e) {
-        console.warn("api4.ipify.org failed, trying fallback...", e);
+        console.warn("api4.ipify.org failed...", e);
       }
 
-      // Try ipv4.icanhazip.com as fallback
+      // Try ipv4.icanhazip.com
       try {
         const response = await fetch("https://ipv4.icanhazip.com", { signal: AbortSignal.timeout(3000) });
         const text = await response.text();

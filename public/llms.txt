@@ -1,0 +1,23 @@
+# CoolService - Dashboard Bisnis Service AC
+
+> Dashboard admin service AC untuk kelola jadwal teknisi, zoning wilayah, potong stok sparepart otomatis, hitung insentif harian, & integrasi WhatsApp.
+
+## Deskripsi Singkat
+CoolService adalah sistem manajemen operasional (ERP mini) khusus untuk penyedia jasa perawatan, perbaikan, dan pemasangan Air Conditioner (AC). Sistem ini mengintegrasikan pemesanan pelanggan, penjadwalan teknisi lapangan, manajemen stok sparepart secara otomatis, pencatatan arus kas keuangan, serta pemantauan rating kinerja teknisi dalam satu dashboard terpadu.
+
+## Halaman Utama
+- **Beranda (`/`)**: Menampilkan statistik utama seperti total orderan hari ini, teknisi yang sedang bertugas, sisa stok sparepart kritis, grafik tren keuangan bulanan, serta indikator kepuasan pelanggan.
+- **Jadwal (`/jadwal`)**: Kalender kerja dinamis untuk mengatur penugasan teknisi ke lokasi pelanggan berdasarkan jam dan hari.
+- **Keuangan (`/keuangan`)**: Pencatatan detail pemasukan (biaya jasa/suku cadang) dan pengeluaran operasional (pembelian sparepart, bensin, dll) beserta rekapitulasi laba bersih.
+- **Orderan (`/orderan`)**: Manajemen status pesanan mulai dari order masuk, penugasan teknisi, pengerjaan di lokasi, hingga status selesai.
+- **Rating (`/rating`)**: Evaluasi kepuasan pelanggan terhadap layanan yang diberikan oleh masing-masing teknisi untuk menjaga kualitas jasa.
+- **Riwayat (`/riwayat`)**: Arsip digital seluruh pekerjaan service AC yang telah selesai dikerjakan beserta laporan teknisnya.
+- **Stok (`/stok`)**: Inventori suku cadang (misal: Freon R32, Kapasitor, Kompresor) dengan sistem pemotongan stok otomatis saat teknisi melaporkan penggunaan suku cadang.
+- **Teknisi (`/teknisi`)**: Basis data teknisi aktif beserta pengaturan wilayah penugasan (zoning area).
+
+## Hubungan Data & Alur Kerja
+1. Pelanggan memesan -> Orderan baru dibuat (`/orderan`).
+2. Admin menugaskan teknisi melalui halaman Jadwal (`/jadwal`).
+3. Teknisi menyelesaikan tugas -> Suku cadang terpakai memotong inventaris di halaman Stok (`/stok`) secara otomatis.
+4. Biaya service masuk ke pencatatan pendapatan di Keuangan (`/keuangan`).
+5. Ulasan pelanggan terekam di halaman Rating (`/rating`) untuk evaluasi teknisi.
