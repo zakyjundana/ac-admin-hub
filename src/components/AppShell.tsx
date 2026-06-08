@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Calendar,
   Users,
@@ -55,6 +56,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
   const { user } = useAuth();
 
+  const ipaymuFn = useServerFn(createIPaymuPayment);
+
   const handleUpgrade = async (plan: "starter" | "pro") => {
     if (!user) {
       toast.error("Silakan masuk terlebih dahulu.");
@@ -62,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
     setLoadingUpgrade(plan);
     try {
-      const res = await createIPaymuPayment({
+      const res = await ipaymuFn({
         data: {
           userId: user.id,
           email: user.email || "",
