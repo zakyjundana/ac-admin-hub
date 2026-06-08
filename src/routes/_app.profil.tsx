@@ -21,7 +21,8 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { updateProfile } from "@/lib/auth";
-import { createIPaymuPayment } from "@/lib/api/ipaymu.server";
+import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/_app/profil")({
   head: () => ({ meta: [{ title: "Profil Bisnis — CoolService" }] }),
@@ -75,6 +76,8 @@ function ProfilPage() {
     }
   };
 
+  const ipaymuFn = useServerFn(createIPaymuPayment);
+
   const handleUpgrade = async (plan: "starter" | "pro") => {
     if (!user) {
       toast.error("Silakan masuk terlebih dahulu.");
@@ -82,7 +85,7 @@ function ProfilPage() {
     }
     setLoadingUpgrade(plan);
     try {
-      const res = await createIPaymuPayment({
+      const res = await ipaymuFn({
         data: {
           userId: user.id,
           email: user.email || "",
