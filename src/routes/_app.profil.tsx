@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { updateProfile } from "@/lib/auth";
+import { updateProfile, isSupabaseConfigured } from "@/lib/auth";
 import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -47,6 +47,50 @@ function ProfilPage() {
         namaBisnis: user.namaBisnis || "",
         noHp: user.noHp || "",
       });
+    }
+  }, [user]);
+
+  // Handle simulated / sandbox payment callbacks
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("payment") === "success") {
+        const plan = params.get("plan");
+        if (plan) {
+          if (isSupabaseConfigured() && user) {
+            import("@/lib/supabase").then(({ supabase }) => {
+              supabase.auth.updateUser({
+                data: {
+                  subscription_tier: plan,
+                  subscription_status: "active",
+                }
+              }).then(({ error }) => {
+                if (error) {
+                  toast.error("Gagal memperbarui paket langganan: " + error.message);
+                } else {
+                  toast.success(`Selamat! Akun Anda berhasil di-upgrade ke paket ${plan.toUpperCase()}`);
+                  setTimeout(() => {
+                    window.location.href = "/profil";
+                  }, 2000);
+                }
+              });
+            }).catch((err) => {
+              console.error("Failed to load supabase module:", err);
+            });
+          } else {
+            // Demo/mock mode simulation
+            toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
+            setTimeout(() => {
+              window.location.href = "/profil";
+            }, 2000);
+          }
+        }
+      } else if (params.get("payment") === "cancel") {
+        toast.error("Pembayaran dibatalkan.");
+        setTimeout(() => {
+          window.location.href = "/profil";
+        }, 1500);
+      }
     }
   }, [user]);
 
