@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getSupabaseAdmin } from "@/lib/api/ipaymu.server";
+import { getSupabaseAdmin } from "@/lib/api/ipaymu-admin.server";
 
 export const Route = createFileRoute("/api/ipaymu-webhook")({
   server: {

@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { signOut, isSupabaseConfigured } from "@/lib/auth";
-import { createIPaymuPayment } from "@/lib/api/ipaymu.server";
+import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
