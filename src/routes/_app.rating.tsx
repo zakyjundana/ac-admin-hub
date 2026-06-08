@@ -335,7 +335,7 @@ function RatingPage() {
                   </div>
 
                   <div className="mb-3">
-                    <StarRating rating={f.rating} size={3} />
+                    <StarRating rating={f.rating} size="sm" />
                   </div>
 
                   <p className="text-xs text-foreground italic">"{f.ulasan}"</p>
