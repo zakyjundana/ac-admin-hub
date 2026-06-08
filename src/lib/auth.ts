@@ -79,3 +79,21 @@ export function isSupabaseConfigured() {
     !!import.meta.env.VITE_SUPABASE_ANON_KEY
   );
 }
+
+/** Perbarui data profil user */
+export async function updateProfile(params: {
+  nama: string;
+  namaBisnis: string;
+  noHp: string;
+}) {
+  const { data, error } = await supabase.auth.updateUser({
+    data: {
+      nama: params.nama,
+      nama_bisnis: params.namaBisnis,
+      no_hp: params.noHp,
+    },
+  });
+  if (error) throw error;
+  return data;
+}
+
