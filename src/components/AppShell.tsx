@@ -28,6 +28,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useStore, store } from "@/lib/dataStore";
+
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -55,6 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
   const { user } = useAuth();
+  const demoMode = useStore((s) => s.demoMode);
   const displayUser = user || (!isSupabaseConfigured() ? {
     id: "demo-user-id",
     email: "demo@coolservice.com",
@@ -151,6 +154,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+
+        {/* Demo Mode Toggle (Only for logged in users with Supabase configured) */}
+        {isSupabaseConfigured() && user && (
+          <div className="mx-2.5 my-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={cn("size-2 rounded-full", demoMode ? "bg-amber-500 animate-pulse" : "bg-green-500")} />
+                <span className="text-xs font-semibold text-sidebar-foreground">Mode Demo</span>
+              </div>
+              <button
+                onClick={() => {
+                  store.setDemoMode(!demoMode);
+                  if (!demoMode) {
+                    toast.info("Mode Demo diaktifkan");
+                  } else {
+                    toast.success("Kembali ke Data Anda");
+                  }
+                }}
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                  demoMode ? "bg-amber-500" : "bg-white/10"
+                )}
+                role="switch"
+                aria-checked={demoMode}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                    demoMode ? "translate-x-4" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-normal">
+              {demoMode 
+                ? "Menampilkan data simulasi lengkap untuk kebutuhan presentasi." 
+                : "Menampilkan data riil milik toko Anda."}
+            </p>
+          </div>
+        )}
 
         {/* Profile + Logout */}
         <div className="p-2.5 border-t border-sidebar-border space-y-1">
@@ -343,6 +386,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="size-9" />
         </header>
+
+        {/* Demo Mode Top Banner */}
+        {demoMode && (
+          <div className="bg-gradient-to-r from-amber-600/15 via-amber-500/5 to-transparent border-b border-amber-500/20 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-300">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-3.5 text-amber-400 animate-pulse flex-shrink-0" />
+              <span>
+                <strong>Mode Demo Aktif:</strong> Menampilkan data simulasi lengkap. Ini berguna untuk presentasi atau uji coba fitur.
+              </span>
+            </div>
+            {isSupabaseConfigured() && user && (
+              <button
+                onClick={() => {
+                  store.setDemoMode(false);
+                  toast.success("Beralih ke Data Riil");
+                }}
+                className="self-start sm:self-auto bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1 rounded-lg text-[10px] transition-all shadow-md shadow-amber-500/20 hover:scale-[1.02]"
+              >
+                Gunakan Data Saya
+              </button>
+            )}
+          </div>
+        )}
 
         <main className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
           {children}

@@ -20,6 +20,7 @@ type State = {
   sparepart: SparePart[];
   riwayat: RiwayatKerusakan[];
   feedback: Feedback[];
+  demoMode: boolean;
 };
 
 let state: State = {
@@ -28,6 +29,7 @@ let state: State = {
   sparepart: initialSparePart,
   riwayat: initialRiwayat,
   feedback: initialFeedback,
+  demoMode: true,
 };
 
 let currentUserId: string | null = null;
@@ -42,10 +44,26 @@ export const store = {
     return () => listeners.delete(l);
   },
 
+  // Check if we are currently in demo mode
+  isDemoMode: () => {
+    if (!isSupabaseConfigured() || !currentUserId) return true;
+    return typeof window !== "undefined" && localStorage.getItem("coolservice_demo_mode_" + currentUserId) === "true";
+  },
+
+  // Set demo mode status
+  setDemoMode: (enabled: boolean) => {
+    if (currentUserId && typeof window !== "undefined") {
+      localStorage.setItem("coolservice_demo_mode_" + currentUserId, enabled ? "true" : "false");
+    }
+    store.syncUser(currentUserId);
+  },
+
   // Synchronize store with the logged-in user
   syncUser: (userId: string | null) => {
     currentUserId = userId;
-    if (!isSupabaseConfigured() || !userId) {
+    const isDemo = !isSupabaseConfigured() || !userId || (typeof window !== "undefined" && localStorage.getItem("coolservice_demo_mode_" + userId) === "true");
+
+    if (isDemo) {
       // Demo mode or logged out -> use mock data
       state = {
         teknisi: initialTeknisi,
@@ -53,15 +71,31 @@ export const store = {
         sparepart: initialSparePart,
         riwayat: initialRiwayat,
         feedback: initialFeedback,
+        demoMode: true,
       };
     } else {
       // Registered user -> load from localStorage, otherwise start empty
       const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + userId) : null;
       if (saved) {
         try {
-          state = JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          state = {
+            teknisi: parsed.teknisi || [],
+            orderan: parsed.orderan || [],
+            sparepart: parsed.sparepart || [],
+            riwayat: parsed.riwayat || [],
+            feedback: parsed.feedback || [],
+            demoMode: false,
+          };
         } catch {
-          state = { teknisi: [], orderan: [], sparepart: [], riwayat: [], feedback: [] };
+          state = {
+            teknisi: [],
+            orderan: [],
+            sparepart: [],
+            riwayat: [],
+            feedback: [],
+            demoMode: false,
+          };
         }
       } else {
         state = {
@@ -70,6 +104,7 @@ export const store = {
           sparepart: [],
           riwayat: [],
           feedback: [],
+          demoMode: false,
         };
       }
     }
@@ -79,7 +114,17 @@ export const store = {
   // Save helper
   saveState: () => {
     if (isSupabaseConfigured() && currentUserId && typeof window !== "undefined") {
-      localStorage.setItem("coolservice_store_" + currentUserId, JSON.stringify(state));
+      if (state.demoMode) return; // Block writing to live database when in Demo Mode
+      localStorage.setItem(
+        "coolservice_store_" + currentUserId,
+        JSON.stringify({
+          teknisi: state.teknisi,
+          orderan: state.orderan,
+          sparepart: state.sparepart,
+          riwayat: state.riwayat,
+          feedback: state.feedback,
+        })
+      );
     }
   },
 
