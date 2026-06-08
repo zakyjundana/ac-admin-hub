@@ -123,11 +123,35 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
     }
   });
 
-// Server function to check outbound IP of the backend server
+// Server function to check outbound IP of the backend server (Forcing IPv4 format)
 export const checkOutboundIP = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      console.log("Checking outbound IP of server...");
+      console.log("Checking outbound IPv4 of server...");
+      // Try api4.ipify.org first (IPv4 only)
+      try {
+        const response = await fetch("https://api4.ipify.org?format=json", { signal: AbortSignal.timeout(3000) });
+        const data = await response.json();
+        if (data.ip && !data.ip.includes(":")) {
+          return { success: true, ip: data.ip as string };
+        }
+      } catch (e) {
+        console.warn("api4.ipify.org failed, trying fallback...", e);
+      }
+
+      // Try ipv4.icanhazip.com as fallback
+      try {
+        const response = await fetch("https://ipv4.icanhazip.com", { signal: AbortSignal.timeout(3000) });
+        const text = await response.text();
+        const ip = text.trim();
+        if (ip && !ip.includes(":")) {
+          return { success: true, ip };
+        }
+      } catch (e) {
+        console.warn("ipv4.icanhazip.com failed...", e);
+      }
+
+      // If all else fails, use standard ipify
       const response = await fetch("https://api.ipify.org?format=json");
       const data = await response.json();
       return {
