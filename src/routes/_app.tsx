@@ -16,6 +16,11 @@ export const Route = createFileRoute("/_app")({
     if (!session) {
       throw redirect({ to: "/login" });
     }
+
+    // Redirect to onboarding if the user has not completed onboarding
+    if (session.user && !session.user.user_metadata?.onboarding_done) {
+      throw redirect({ to: "/onboarding" });
+    }
   },
   component: ShellRoute,
 });
