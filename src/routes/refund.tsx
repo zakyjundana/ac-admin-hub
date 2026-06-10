@@ -14,7 +14,7 @@ function RefundPage() {
       <div className="max-w-3xl mx-auto space-y-8 relative z-10">
         {/* Navigation back */}
         <Link 
-          to="/landing" 
+          to="/" 
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> Kembali ke Beranda
