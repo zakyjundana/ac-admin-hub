@@ -103,7 +103,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex">
+    <main className="min-h-screen bg-[#0a0a0f] text-white flex">
       {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between w-[45%] relative overflow-hidden border-r border-white/5 p-12">
         {/* Background gradient */}
@@ -259,6 +259,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -348,6 +349,6 @@ export default function RegisterPage() {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

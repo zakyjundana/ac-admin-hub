@@ -3,7 +3,14 @@ import { Wrench, ChevronLeft, HelpCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({ meta: [{ title: "FAQ — CoolService" }] }),
+  head: () => ({
+    meta: [
+      { title: "FAQ (Tanya Jawab) — CoolService" },
+      { name: "description", content: "Temukan jawaban atas pertanyaan umum seputar layanan manajemen servis AC, integrasi pembayaran iPaymu, refund, dan pembatalan langganan di CoolService." },
+      { property: "og:title", content: "FAQ (Tanya Jawab) — CoolService" },
+      { property: "og:description", content: "Temukan jawaban atas pertanyaan umum seputar layanan manajemen servis AC, integrasi pembayaran iPaymu, refund, dan pembatalan langganan di CoolService." },
+    ],
+  }),
   component: FAQPage,
 });
 
@@ -14,6 +21,61 @@ interface FAQItem {
 
 function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Apa itu CoolService dan bagaimana cara kerjanya?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CoolService adalah platform Software-as-a-Service (SaaS) manajemen operasional yang dirancang khusus untuk pemilik usaha servis AC di Indonesia. Sistem kami membantu mengotomatiskan penjadwalan teknisi, pemantauan stok spare part, pencatatan keuangan, hingga pengiriman notifikasi/link booking mandiri ke klien melalui WhatsApp."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Apakah CoolService sudah terintegrasi dengan iPaymu?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ya, CoolService terintegrasi penuh dengan payment gateway iPaymu. Integrasi ini memungkinkan pemilik usaha melakukan upgrade langganan ke paket Starter atau Pro secara instan dan aman menggunakan metode pembayaran Virtual Account, QRIS, E-Wallet, maupun ritel seperti Alfamart/Indomaret."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bagaimana cara melakukan pengujian transaksi (Test Transaction)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kami mendukung pengujian transaksi baik di lingkungan sandbox maupun production: Mode Sandbox/Uji Coba menggunakan API Key sandbox untuk menyimulasikan transaksi tanpa menggunakan uang riil, dan Mode Production dengan memilih paket Starter atau Pro menggunakan Virtual Account atau QRIS langsung."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bagaimana dengan kebijakan pengembalian dana (Refund Policy)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kami berkomitmen menjaga kepuasan Anda. Pengembalian dana penuh berlaku jika sistem kami gagal mengaktifkan fitur premium dalam waktu 24 jam setelah pembayaran berhasil dikonfirmasi oleh iPaymu, atau terjadi kesalahan potong ganda akibat gangguan jaringan."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Di mana saya bisa mengisi alamat IP Outbound Website di iPaymu?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Alamat IP Outbound (IP keluar server backend Anda) dapat dikonfigurasi di dashboard merchant iPaymu pada menu Pengaturan Integrasi. IP ini dibutuhkan agar server iPaymu dapat memvalidasi callback/webhook notifikasi pembayaran secara aman."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Apakah saya bisa membatalkan langganan kapan saja?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tentu saja. Tidak ada kontrak mengikat. Anda dapat membatalkan perpanjangan otomatis paket Starter atau Pro kapan saja melalui menu Profil Bisnis. Setelah dibatalkan, akun premium Anda akan tetap aktif hingga akhir masa penagihan bulan berjalan."
+        }
+      }
+    ]
+  };
 
   const faqs: FAQItem[] = [
     {
@@ -78,6 +140,10 @@ function FAQPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white py-12 px-6 relative overflow-hidden font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="max-w-3xl mx-auto space-y-8 relative z-10">
@@ -89,50 +155,52 @@ function FAQPage() {
           <ChevronLeft className="w-4 h-4" /> Kembali ke Beranda
         </Link>
 
-        {/* Header */}
-        <div className="flex items-center gap-3 pb-6 border-b border-white/10">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-            <HelpCircle className="w-6 h-6" />
+        <main className="space-y-8">
+          {/* Header */}
+          <div className="flex items-center gap-3 pb-6 border-b border-white/10">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">FAQ (Tanya Jawab)</h1>
+              <p className="text-sm text-gray-400 mt-1">Pertanyaan umum seputar layanan dan pembayaran CoolService</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">FAQ (Tanya Jawab)</h1>
-            <p className="text-sm text-gray-400 mt-1">Pertanyaan umum seputar layanan dan pembayaran CoolService</p>
-          </div>
-        </div>
 
-        {/* Content - FAQ Accordion */}
-        <div className="space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <div 
-                key={index}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-white/20"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between p-5 text-left font-semibold text-white focus:outline-none"
-                >
-                  <span>{faq.question}</span>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-400" : ""}`} />
-                </button>
+          {/* Content - FAQ Accordion */}
+          <div className="space-y-4">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
                 <div 
-                  className={`transition-all duration-300 ease-in-out ${
-                    isOpen ? "max-h-60 border-t border-white/5 opacity-100 p-5" : "max-h-0 opacity-0 pointer-events-none overflow-hidden"
-                  }`}
+                  key={index}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-white/20"
                 >
-                  <div className="text-sm text-gray-300 leading-relaxed">
-                    {faq.answer}
+                  <button
+                    type="button"
+                    onClick={() => toggleFAQ(index)}
+                    className="w-full flex items-center justify-between p-5 text-left font-semibold text-white focus:outline-none"
+                  >
+                    <span>{faq.question}</span>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-400" : ""}`} />
+                  </button>
+                  <div 
+                    className={`transition-all duration-300 ease-in-out ${
+                      isOpen ? "max-h-60 border-t border-white/5 opacity-100 p-5" : "max-h-0 opacity-0 pointer-events-none overflow-hidden"
+                    }`}
+                  >
+                    <div className="text-sm text-gray-300 leading-relaxed">
+                      {faq.answer}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </main>
 
         {/* Footer */}
-        <div className="pt-8 border-t border-white/10 flex items-center justify-between text-xs text-gray-500">
+        <footer className="pt-8 border-t border-white/10 flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center">
               <Wrench className="w-3 h-3 text-blue-400" />
@@ -143,7 +211,7 @@ function FAQPage() {
             <Link to="/terms" className="hover:text-white transition-colors">Syarat & Ketentuan</Link>
             <Link to="/refund" className="hover:text-white transition-colors">Kebijakan Refund</Link>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );

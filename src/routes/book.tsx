@@ -43,6 +43,14 @@ export const Route = createFileRoute("/book")({
       shop: (search.shop as string) || "demo-user-id",
     };
   },
+  head: () => ({
+    meta: [
+      { title: "Booking Jadwal Servis AC Online - CoolService" },
+      { name: "description", content: "Pilih tanggal dan waktu kunjungan teknisi untuk servis AC Anda secara online dengan praktis dan cepat." },
+      { property: "og:title", content: "Booking Jadwal Servis AC Online - CoolService" },
+      { property: "og:description", content: "Pilih tanggal dan waktu kunjungan teknisi untuk servis AC Anda secara online dengan praktis dan cepat." },
+    ],
+  }),
   component: BookingPage,
 });
 
@@ -197,13 +205,13 @@ function BookingPage() {
 
             {/* Calendar Controls */}
             <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-2 rounded-xl">
-              <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+              <button onClick={prevMonth} aria-label="Bulan sebelumnya" className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="text-sm font-semibold capitalize">
                 {format(currentMonth, "MMMM yyyy", { locale: localeId })}
               </span>
-              <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+              <button onClick={nextMonth} aria-label="Bulan berikutnya" className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

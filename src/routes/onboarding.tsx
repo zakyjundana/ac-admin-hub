@@ -19,6 +19,14 @@ import { isSupabaseConfigured } from "@/lib/auth";
 import { store } from "@/lib/dataStore";
 
 export const Route = createFileRoute("/onboarding")({
+  head: () => ({
+    meta: [
+      { title: "Setup Profil Bisnis & Teknisi - CoolService" },
+      { name: "description", content: "Lakukan konfigurasi profil usaha servis AC dan daftarkan teknisi pertama Anda untuk mulai menggunakan CoolService." },
+      { property: "og:title", content: "Setup Profil Bisnis & Teknisi - CoolService" },
+      { property: "og:description", content: "Lakukan konfigurasi profil usaha servis AC dan daftarkan teknisi pertama Anda untuk mulai menggunakan CoolService." },
+    ],
+  }),
   component: OnboardingPage,
 });
 
@@ -124,7 +132,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-6 py-12">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 mb-10">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
@@ -221,7 +229,7 @@ export default function OnboardingPage() {
                       Teknisi #{idx + 1}
                     </span>
                     {teknisiList.length > 1 && (
-                      <button type="button" onClick={() => removeTeknisi(idx)} className="text-red-400 hover:text-red-300 transition-colors p-1">
+                      <button type="button" onClick={() => removeTeknisi(idx)} aria-label="Hapus teknisi" className="text-red-400 hover:text-red-300 transition-colors p-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
@@ -302,6 +310,6 @@ export default function OnboardingPage() {
           Hubungi kami via WhatsApp
         </a>
       </p>
-    </div>
+    </main>
   );
 }
