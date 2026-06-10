@@ -111,7 +111,7 @@ export default function RegisterPage() {
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative">
-          <Link to="/landing" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
               <Wrench className="w-5 h-5 text-white" />
             </div>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <Link to="/landing" className="flex lg:hidden items-center gap-2 mb-8 justify-center">
+          <Link to="/" className="flex lg:hidden items-center gap-2 mb-8 justify-center">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
               <Wrench className="w-4 h-4 text-white" />
             </div>

@@ -14,11 +14,10 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LandingRouteImport } from './routes/landing'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
 import { Route as AppStokRouteImport } from './routes/_app.stok'
 import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
@@ -27,6 +26,7 @@ import { Route as AppProfilRouteImport } from './routes/_app.profil'
 import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
 import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
 import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as ApiPublicIpaymuWebhookRouteImport } from './routes/api/public/ipaymu-webhook'
 
 const TermsRoute = TermsRouteImport.update({
@@ -54,11 +54,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
@@ -73,10 +68,10 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppTeknisiRoute = AppTeknisiRouteImport.update({
   id: '/teknisi',
@@ -118,6 +113,11 @@ const AppJadwalRoute = AppJadwalRouteImport.update({
   path: '/jadwal',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
   id: '/api/public/ipaymu-webhook',
   path: '/api/public/ipaymu-webhook',
@@ -125,15 +125,15 @@ const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
-  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/dashboard': typeof AppDashboardRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -145,14 +145,15 @@ export interface FileRoutesByFullPath {
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
-  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/dashboard': typeof AppDashboardRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
   '/orderan': typeof AppOrderanRoute
@@ -161,20 +162,20 @@ export interface FileRoutesByTo {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
-  '/': typeof AppIndexRoute
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
-  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/keuangan': typeof AppKeuanganRoute
   '/_app/orderan': typeof AppOrderanRoute
@@ -183,7 +184,6 @@ export interface FileRoutesById {
   '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
-  '/_app/': typeof AppIndexRoute
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRouteTypes {
@@ -192,12 +192,12 @@ export interface FileRouteTypes {
     | '/'
     | '/book'
     | '/faq'
-    | '/landing'
     | '/login'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/dashboard'
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
@@ -209,14 +209,15 @@ export interface FileRouteTypes {
     | '/api/public/ipaymu-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/book'
     | '/faq'
-    | '/landing'
     | '/login'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/dashboard'
     | '/jadwal'
     | '/keuangan'
     | '/orderan'
@@ -225,19 +226,19 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
-    | '/'
     | '/api/public/ipaymu-webhook'
   id:
     | '__root__'
+    | '/'
     | '/_app'
     | '/book'
     | '/faq'
-    | '/landing'
     | '/login'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/_app/dashboard'
     | '/_app/jadwal'
     | '/_app/keuangan'
     | '/_app/orderan'
@@ -246,15 +247,14 @@ export interface FileRouteTypes {
     | '/_app/riwayat'
     | '/_app/stok'
     | '/_app/teknisi'
-    | '/_app/'
     | '/api/public/ipaymu-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   BookRoute: typeof BookRoute
   FaqRoute: typeof FaqRoute
-  LandingRoute: typeof LandingRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   RefundRoute: typeof RefundRoute
@@ -300,13 +300,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/faq': {
       id: '/faq'
       path: '/faq'
@@ -328,12 +321,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/teknisi': {
       id: '/_app/teknisi'
@@ -391,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJadwalRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/public/ipaymu-webhook': {
       id: '/api/public/ipaymu-webhook'
       path: '/api/public/ipaymu-webhook'
@@ -402,6 +402,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
   AppJadwalRoute: typeof AppJadwalRoute
   AppKeuanganRoute: typeof AppKeuanganRoute
   AppOrderanRoute: typeof AppOrderanRoute
@@ -410,10 +411,10 @@ interface AppRouteChildren {
   AppRiwayatRoute: typeof AppRiwayatRoute
   AppStokRoute: typeof AppStokRoute
   AppTeknisiRoute: typeof AppTeknisiRoute
-  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
   AppJadwalRoute: AppJadwalRoute,
   AppKeuanganRoute: AppKeuanganRoute,
   AppOrderanRoute: AppOrderanRoute,
@@ -422,16 +423,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppRiwayatRoute: AppRiwayatRoute,
   AppStokRoute: AppStokRoute,
   AppTeknisiRoute: AppTeknisiRoute,
-  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   BookRoute: BookRoute,
   FaqRoute: FaqRoute,
-  LandingRoute: LandingRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   RefundRoute: RefundRoute,

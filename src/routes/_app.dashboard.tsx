@@ -26,7 +26,7 @@ import { toast } from "sonner";
 
 const FinancialChart = lazy(() => import("@/components/FinancialChart"));
 
-export const Route = createFileRoute("/_app/")({
+export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard Analitik — CoolService" }] }),
   component: DashboardPage,
 });

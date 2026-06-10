@@ -32,7 +32,7 @@ import { useStore, store } from "@/lib/dataStore";
 
 
 const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/orderan", label: "Orderan", icon: ClipboardList },
   { to: "/jadwal", label: "Jadwal", icon: Calendar },
   { to: "/teknisi", label: "Teknisi", icon: Users },
@@ -113,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <Link
-          to="/"
+          to="/dashboard"
           onClick={() => setOpen(false)}
           className="group flex items-center gap-3 px-5 py-4 border-b border-sidebar-border hover:bg-sidebar-accent transition-colors"
         >
@@ -378,7 +378,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="size-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-primary-foreground">
               <Snowflake className="size-3.5" />
             </div>

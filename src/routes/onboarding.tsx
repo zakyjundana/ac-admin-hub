@@ -100,16 +100,16 @@ export default function OnboardingPage() {
 
       // Sync data store and save the technician to user's storage
       if (userId) {
-        store.syncUser(userId);
-        teknisiList.forEach((t) => {
+        await store.syncUser(userId);
+        for (const t of teknisiList) {
           if (t.nama && t.noHp && t.wilayah) {
-            store.addTeknisi({
+            await store.addTeknisi({
               nama: t.nama,
               no_hp: t.noHp,
               wilayah: t.wilayah,
             });
           }
-        });
+        }
       }
 
       // Mode demo atau sukses → ke dashboard
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-6 py-12">
       {/* Logo */}
-      <Link to="/landing" className="flex items-center gap-2.5 mb-10">
+      <Link to="/" className="flex items-center gap-2.5 mb-10">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
           <Wrench className="w-5 h-5 text-white" />
         </div>
@@ -288,7 +288,7 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            <a href="/"
+            <a href="/dashboard"
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02]">
               Buka Dashboard Sekarang <ChevronRight className="w-4 h-4" />
             </a>

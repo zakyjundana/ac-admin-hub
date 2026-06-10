@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { isSupabaseConfigured } from "./auth";
+import { supabase } from "./supabase";
 import {
   initialOrderan,
   initialTeknisi,
@@ -13,7 +14,7 @@ import {
   type Feedback,
 } from "./mockData";
 
-// Simple in-memory store (will be replaced with Supabase later).
+// Simple in-memory store backed by Supabase & LocalStorage cache.
 type State = {
   teknisi: Teknisi[];
   orderan: Orderan[];
@@ -61,15 +62,17 @@ export const store = {
   },
 
   // Synchronize store with the logged-in user
-  syncUser: (userId: string | null) => {
+  syncUser: async (userId: string | null) => {
     currentUserId = userId;
     // isDemo = true only when: not configured, no userId, OR user explicitly set demo=true
     // A missing/null key means live mode for authenticated users
     const storedDemo = userId && typeof window !== "undefined" ? localStorage.getItem("coolservice_demo_mode_" + userId) : null;
+    
     // If authenticated user has never set a preference, default to live mode and persist it
     if (userId && storedDemo === null && isSupabaseConfigured() && typeof window !== "undefined") {
       localStorage.setItem("coolservice_demo_mode_" + userId, "false");
     }
+    
     const isDemo = !isSupabaseConfigured() || !userId || storedDemo === "true";
 
     if (isDemo) {
@@ -82,21 +85,69 @@ export const store = {
         feedback: initialFeedback,
         demoMode: true,
       };
+      emit();
     } else {
-      // Registered user -> load from localStorage, otherwise start empty
-      const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + userId) : null;
-      if (saved) {
+      // Registered user -> load from Supabase database with fallback to localStorage
+      let loadedFromDb = false;
+      if (isSupabaseConfigured() && userId) {
         try {
-          const parsed = JSON.parse(saved);
-          state = {
-            teknisi: parsed.teknisi || [],
-            orderan: parsed.orderan || [],
-            sparepart: parsed.sparepart || [],
-            riwayat: parsed.riwayat || [],
-            feedback: parsed.feedback || [],
-            demoMode: false,
-          };
-        } catch {
+          const [
+            { data: dbTeknisi, error: errTeknisi },
+            { data: dbOrderan, error: errOrderan },
+            { data: dbSparepart, error: errSparepart },
+            { data: dbRiwayat, error: errRiwayat },
+            { data: dbFeedback, error: errFeedback }
+          ] = await Promise.all([
+            supabase.from("ac_teknisi").select("*").eq("user_id", userId),
+            supabase.from("ac_orderan").select("*").eq("user_id", userId),
+            supabase.from("ac_spareparts").select("*").eq("user_id", userId),
+            supabase.from("ac_riwayat").select("*").eq("user_id", userId),
+            supabase.from("ac_feedback").select("*").eq("user_id", userId),
+          ]);
+
+          if (!errTeknisi && !errOrderan && !errSparepart && !errRiwayat && !errFeedback) {
+            state = {
+              teknisi: dbTeknisi || [],
+              orderan: dbOrderan || [],
+              sparepart: dbSparepart || [],
+              riwayat: dbRiwayat || [],
+              feedback: dbFeedback || [],
+              demoMode: false,
+            };
+            loadedFromDb = true;
+          } else {
+            console.warn("Supabase fetch errors:", { errTeknisi, errOrderan, errSparepart, errRiwayat, errFeedback });
+          }
+        } catch (dbErr) {
+          console.error("Failed to fetch from Supabase:", dbErr);
+        }
+      }
+
+      if (!loadedFromDb) {
+        // Fallback to localStorage
+        const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + userId) : null;
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            state = {
+              teknisi: parsed.teknisi || [],
+              orderan: parsed.orderan || [],
+              sparepart: parsed.sparepart || [],
+              riwayat: parsed.riwayat || [],
+              feedback: parsed.feedback || [],
+              demoMode: false,
+            };
+          } catch {
+            state = {
+              teknisi: [],
+              orderan: [],
+              sparepart: [],
+              riwayat: [],
+              feedback: [],
+              demoMode: false,
+            };
+          }
+        } else {
           state = {
             teknisi: [],
             orderan: [],
@@ -106,21 +157,12 @@ export const store = {
             demoMode: false,
           };
         }
-      } else {
-        state = {
-          teknisi: [],
-          orderan: [],
-          sparepart: [],
-          riwayat: [],
-          feedback: [],
-          demoMode: false,
-        };
       }
+      emit();
     }
-    emit();
   },
 
-  // Save helper
+  // Save helper to persist to localStorage (serves as local cache)
   saveState: () => {
     if (isSupabaseConfigured() && currentUserId && typeof window !== "undefined") {
       if (state.demoMode) return; // Block writing to live database when in Demo Mode
@@ -138,17 +180,34 @@ export const store = {
   },
 
   // ---- Orderan
-  addOrderan: (o: Omit<Orderan, "id">) => {
-    state = { ...state, orderan: [...state.orderan, { ...o, id: `o${Date.now()}`, sumber: "Admin" }] };
+  addOrderan: async (o: Omit<Orderan, "id">) => {
+    const id = `o${Date.now()}`;
+    const newOrder = { ...o, id, sumber: "Admin" as const };
+    state = { ...state, orderan: [...state.orderan, newOrder] };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_orderan").insert({ ...newOrder, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert order to Supabase:", err);
+      }
+    }
   },
-  addClientBooking: (shopId: string, o: Omit<Orderan, "id">) => {
+  addClientBooking: async (shopId: string, o: Omit<Orderan, "id">) => {
     const booking = { ...o, id: `o${Date.now()}`, sumber: "Mandiri" as const };
     if (currentUserId === shopId) {
       state = { ...state, orderan: [...state.orderan, booking] };
       store.saveState();
       emit();
+      if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+        try {
+          await supabase.from("ac_orderan").insert({ ...booking, user_id: currentUserId });
+        } catch (err) {
+          console.error("Error inserting booking:", err);
+        }
+      }
     } else {
       const saved = typeof window !== "undefined" ? localStorage.getItem("coolservice_store_" + shopId) : null;
       let shopState: any = { teknisi: [], orderan: [], sparepart: [], riwayat: [], feedback: [] };
@@ -161,21 +220,30 @@ export const store = {
       if (typeof window !== "undefined") {
         localStorage.setItem("coolservice_store_" + shopId, JSON.stringify(shopState));
       }
+
+      if (isSupabaseConfigured()) {
+        try {
+          await supabase.from("ac_orderan").insert({ ...booking, user_id: shopId });
+        } catch (err) {
+          console.error("Error inserting booking to other shop:", err);
+        }
+      }
+
       if (!currentUserId || currentUserId === "demo-user-id" || shopId === "demo-user-id") {
         state = { ...state, orderan: [...state.orderan, booking] };
         emit();
       }
     }
   },
-  updateOrderan: (id: string, patch: Partial<Orderan>) => {
+  updateOrderan: async (id: string, patch: Partial<Orderan>) => {
     const prev = state.orderan.find((o) => o.id === id);
     state = {
       ...state,
       orderan: state.orderan.map((o) => (o.id === id ? { ...o, ...patch } : o)),
     };
+    
     // Saat status berubah menjadi "Selesai" → catat ke riwayat otomatis & kurangi stok spare part
     if (prev && patch.status === "Selesai" && prev.status !== "Selesai") {
-      // Kurangi stok spare part
       const partsToReduce = patch.spare_parts !== undefined ? patch.spare_parts : prev.spare_parts;
       if (partsToReduce && partsToReduce.length > 0) {
         state = {
@@ -185,6 +253,15 @@ export const store = {
             return match ? { ...sp, stok: Math.max(0, sp.stok - match.qty) } : sp;
           }),
         };
+        if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+          for (const sp of partsToReduce) {
+            const targetSp = state.sparepart.find(x => x.id === sp.sparepart_id);
+            if (targetSp) {
+              supabase.from("ac_spareparts").update({ stok: targetSp.stok }).eq("id", targetSp.id).eq("user_id", currentUserId)
+                .catch(err => console.error("Error updating stock:", err));
+            }
+          }
+        }
       }
 
       const exists = state.riwayat.some((r) => r.orderan_id === id);
@@ -203,47 +280,111 @@ export const store = {
           biaya: 0,
         };
         state = { ...state, riwayat: [...state.riwayat, r] };
+        if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+          supabase.from("ac_riwayat").insert({ ...r, user_id: currentUserId })
+            .catch(err => console.error("Error inserting riwayat:", err));
+        }
       }
     }
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_orderan").update(patch).eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to update order in Supabase:", err);
+      }
+    }
   },
-  deleteOrderan: (id: string) => {
+  deleteOrderan: async (id: string) => {
     state = { ...state, orderan: state.orderan.filter((o) => o.id !== id) };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_orderan").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete order from Supabase:", err);
+      }
+    }
   },
   // ---- Teknisi
-  addTeknisi: (t: Omit<Teknisi, "id">) => {
-    state = { ...state, teknisi: [...state.teknisi, { ...t, id: `t${Date.now()}` }] };
+  addTeknisi: async (t: Omit<Teknisi, "id">) => {
+    const id = `t${Date.now()}`;
+    const newTeknisi = { ...t, id };
+    state = { ...state, teknisi: [...state.teknisi, newTeknisi] };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_teknisi").insert({ ...newTeknisi, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert technician to Supabase:", err);
+      }
+    }
   },
-  deleteTeknisi: (id: string) => {
+  deleteTeknisi: async (id: string) => {
     state = { ...state, teknisi: state.teknisi.filter((t) => t.id !== id) };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_teknisi").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete technician from Supabase:", err);
+      }
+    }
   },
   // ---- Spare Part
-  addSparePart: (s: Omit<SparePart, "id">) => {
-    state = { ...state, sparepart: [...state.sparepart, { ...s, id: `sp${Date.now()}` }] };
+  addSparePart: async (s: Omit<SparePart, "id">) => {
+    const id = `sp${Date.now()}`;
+    const newSp = { ...s, id };
+    state = { ...state, sparepart: [...state.sparepart, newSp] };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_spareparts").insert({ ...newSp, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert sparepart to Supabase:", err);
+      }
+    }
   },
-  updateSparePart: (id: string, patch: Partial<SparePart>) => {
+  updateSparePart: async (id: string, patch: Partial<SparePart>) => {
     state = {
       ...state,
       sparepart: state.sparepart.map((s) => (s.id === id ? { ...s, ...patch } : s)),
     };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_spareparts").update(patch).eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to update sparepart in Supabase:", err);
+      }
+    }
   },
-  deleteSparePart: (id: string) => {
+  deleteSparePart: async (id: string) => {
     state = { ...state, sparepart: state.sparepart.filter((s) => s.id !== id) };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_spareparts").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete sparepart from Supabase:", err);
+      }
+    }
   },
-  adjustStok: (id: string, delta: number) => {
+  adjustStok: async (id: string, delta: number) => {
     state = {
       ...state,
       sparepart: state.sparepart.map((s) =>
@@ -252,28 +393,75 @@ export const store = {
     };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        const target = state.sparepart.find((s) => s.id === id);
+        if (target) {
+          await supabase.from("ac_spareparts").update({ stok: target.stok }).eq("id", id).eq("user_id", currentUserId);
+        }
+      } catch (err) {
+        console.error("Failed to adjust stock in Supabase:", err);
+      }
+    }
   },
   // ---- Riwayat
-  addRiwayat: (r: Omit<RiwayatKerusakan, "id">) => {
-    state = { ...state, riwayat: [...state.riwayat, { ...r, id: `r${Date.now()}` }] };
+  addRiwayat: async (r: Omit<RiwayatKerusakan, "id">) => {
+    const id = `r${Date.now()}`;
+    const newRiwayat = { ...r, id };
+    state = { ...state, riwayat: [...state.riwayat, newRiwayat] };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_riwayat").insert({ ...newRiwayat, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert riwayat to Supabase:", err);
+      }
+    }
   },
-  deleteRiwayat: (id: string) => {
+  deleteRiwayat: async (id: string) => {
     state = { ...state, riwayat: state.riwayat.filter((r) => r.id !== id) };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_riwayat").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete riwayat from Supabase:", err);
+      }
+    }
   },
   // ---- Feedback
-  addFeedback: (f: Omit<Feedback, "id">) => {
-    state = { ...state, feedback: [...state.feedback, { ...f, id: `f${Date.now()}` }] };
+  addFeedback: async (f: Omit<Feedback, "id">) => {
+    const id = `f${Date.now()}`;
+    const newFeedback = { ...f, id };
+    state = { ...state, feedback: [...state.feedback, newFeedback] };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_feedback").insert({ ...newFeedback, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert feedback to Supabase:", err);
+      }
+    }
   },
-  deleteFeedback: (id: string) => {
+  deleteFeedback: async (id: string) => {
     state = { ...state, feedback: state.feedback.filter((f) => f.id !== id) };
     store.saveState();
     emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_feedback").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete feedback from Supabase:", err);
+      }
+    }
   },
 };
 

@@ -17,7 +17,7 @@ import {
   Award,
 } from "lucide-react";
 
-export const Route = createFileRoute("/landing")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "CoolService - Kelola Teknisi & Orderan AC Lebih Rapi" },
@@ -142,7 +142,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-white font-sans">
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-[#0a0a0f]/80 border-b border-white/5">
-        <Link to="/landing" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
             <Wrench className="w-4 h-4 text-white" />
           </div>
@@ -199,8 +199,8 @@ export default function LandingPage() {
               Mulai Gratis Sekarang
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              to="/"
+             <Link
+              to="/dashboard"
               className="flex items-center gap-2 text-gray-400 hover:text-white px-6 py-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all text-sm"
             >
               Lihat Demo Dashboard
