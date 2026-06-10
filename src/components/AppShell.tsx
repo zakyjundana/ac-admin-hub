@@ -18,6 +18,8 @@ import {
   Check,
   Sparkles,
   AlertCircle,
+  MessageSquare,
+  ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -56,8 +58,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<"starter" | "pro" | null>(null);
   const { user } = useAuth();
   const demoMode = useStore((s) => s.demoMode);
+
+  const getWhatsAppLink = (plan: "starter" | "pro") => {
+    const planName = plan === "starter" ? "Starter Plan" : "Pro Plan";
+    const planPrice = plan === "starter" ? "Rp 99.000" : "Rp 199.000";
+    const email = displayUser?.email || "—";
+    const shopName = displayUser?.namaBisnis || "—";
+    const userId = displayUser?.id || "—";
+    
+    const message = `Halo Admin CoolService, saya ingin melakukan pembayaran manual untuk upgrade paket *${planName}* (${planPrice}).
+
+*Data Akun:*
+- Email: ${email}
+- Nama Usaha: ${shopName}
+- User ID: ${userId}
+
+Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi paketnya. Terima kasih!`;
+
+    return `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
+  };
   const displayUser = user || (!isSupabaseConfigured() ? {
     id: "demo-user-id",
     email: "demo@coolservice.com",
@@ -246,7 +268,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Upgrade Dialog */}
-          <Dialog open={showUpgrade} onOpenChange={setShowUpgrade}>
+          <Dialog open={showUpgrade} onOpenChange={(val) => {
+            setShowUpgrade(val);
+            if (!val) setSelectedPlan(null);
+          }}>
             <DialogContent className="max-w-xl bg-[#0f0f15] border-white/5 text-white">
               <DialogHeader>
                 <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -255,93 +280,178 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </DialogTitle>
               </DialogHeader>
               <div className="py-4 space-y-4">
-                <p className="text-sm text-gray-400">
-                  Pilih paket langganan terbaik untuk mendukung skala operasional bengkel servis AC Anda secara maksimal.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Starter Plan */}
-                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-bold text-sm">Starter Plan</h4>
-                        <span className="text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full">3 Teknisi</span>
+                {selectedPlan === null ? (
+                  <>
+                    <p className="text-sm text-gray-400">
+                      Pilih paket langganan terbaik untuk mendukung skala operasional bengkel servis AC Anda secara maksimal.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Starter Plan */}
+                      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-sm">Starter Plan</h4>
+                            <span className="text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full">3 Teknisi</span>
+                          </div>
+                          <div className="flex items-baseline gap-0.5 mb-4">
+                            <span className="text-xl font-extrabold text-white">Rp 99.000</span>
+                            <span className="text-xs text-gray-500">/bulan</span>
+                          </div>
+                          <ul className="space-y-2 text-xs text-gray-300 mb-6">
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Manajemen Stok Spare Part
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Zoning Wilayah Kerja
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Laporan Keuangan Dasar
+                            </li>
+                          </ul>
+                        </div>
+                        <Button 
+                          onClick={() => setSelectedPlan("starter")}
+                          disabled={displayUser?.subscriptionTier === "starter"}
+                          className="w-full bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg text-xs"
+                        >
+                          {displayUser?.subscriptionTier === "starter" ? "Plan Aktif" : "Pilih Starter"}
+                        </Button>
                       </div>
-                      <div className="flex items-baseline gap-0.5 mb-4">
-                        <span className="text-xl font-extrabold text-white">Rp 99.000</span>
-                        <span className="text-xs text-gray-500">/bulan</span>
-                      </div>
-                      <ul className="space-y-2 text-xs text-gray-300 mb-6">
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Manajemen Stok Spare Part
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Zoning Wilayah Kerja
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Laporan Keuangan Dasar
-                        </li>
-                      </ul>
-                    </div>
-                    <Button 
-                      onClick={() => handleUpgrade("starter")}
-                      disabled={loadingUpgrade !== null || displayUser?.subscriptionTier === "starter"}
-                      className="w-full bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg text-xs"
-                    >
-                      {loadingUpgrade === "starter" ? "Memproses..." : displayUser?.subscriptionTier === "starter" ? "Plan Aktif" : "Pilih Starter"}
-                    </Button>
-                  </div>
 
-                  {/* Pro Plan */}
-                  <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.03] p-5 flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-[9px] text-black font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      Populer
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-bold text-sm">Pro Plan</h4>
-                        <span className="text-[10px] font-semibold bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full">Unlimited</span>
+                      {/* Pro Plan */}
+                      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.03] p-5 flex flex-col justify-between relative overflow-hidden">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-[9px] text-black font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          Populer
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-sm">Pro Plan</h4>
+                            <span className="text-[10px] font-semibold bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full">Unlimited</span>
+                          </div>
+                          <div className="flex items-baseline gap-0.5 mb-4">
+                            <span className="text-xl font-extrabold text-white">Rp 199.000</span>
+                            <span className="text-xs text-gray-500">/bulan</span>
+                          </div>
+                          <ul className="space-y-2 text-xs text-gray-300 mb-6">
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Semua fitur Starter
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Manajemen Garansi Otomatis
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Insentif & Rating Teknisi
+                            </li>
+                            <li className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                              Ekspor Laporan ke PDF
+                            </li>
+                          </ul>
+                        </div>
+                        <Button 
+                          onClick={() => setSelectedPlan("pro")}
+                          disabled={displayUser?.subscriptionTier === "pro"}
+                          className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-bold text-xs"
+                        >
+                          {displayUser?.subscriptionTier === "pro" ? "Plan Aktif" : "Pilih Pro"}
+                        </Button>
                       </div>
-                      <div className="flex items-baseline gap-0.5 mb-4">
-                        <span className="text-xl font-extrabold text-white">Rp 199.000</span>
-                        <span className="text-xs text-gray-500">/bulan</span>
-                      </div>
-                      <ul className="space-y-2 text-xs text-gray-300 mb-6">
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Semua fitur Starter
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Manajemen Garansi Otomatis
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Insentif & Rating Teknisi
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          Ekspor Laporan ke PDF
-                        </li>
-                      </ul>
                     </div>
-                    <Button 
-                      onClick={() => handleUpgrade("pro")}
-                      disabled={loadingUpgrade !== null || displayUser?.subscriptionTier === "pro"}
-                      className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-bold text-xs"
-                    >
-                      {loadingUpgrade === "pro" ? "Memproses..." : displayUser?.subscriptionTier === "pro" ? "Plan Aktif" : "Pilih Pro"}
-                    </Button>
+                    
+                    <div className="flex items-start gap-2 text-[10px] text-gray-500 pt-2 bg-white/[0.01] p-3 rounded-lg border border-white/5">
+                      <AlertCircle className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <span>Pembayaran diproses dengan aman oleh iPaymu (Indonesia). Pembayaran instan mendukung QRIS, Virtual Account, dan Transfer Bank.</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                      <div>
+                        <h4 className="font-bold text-sm text-white capitalize">{selectedPlan} Plan</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedPlan === "starter" ? "Rp 99.000/bulan" : "Rp 199.000/bulan"}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedPlan(null)}
+                        className="text-xs text-primary hover:text-primary-glow font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" /> Kembali
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* Metode A: iPaymu */}
+                      <div className="p-4 rounded-xl border border-white/5 bg-white/[0.02] space-y-3">
+                        <div>
+                          <h5 className="text-sm font-bold text-white flex items-center gap-1.5">
+                            <CreditCard className="w-4 h-4 text-cyan-400" />
+                            Pembayaran Otomatis (Instan)
+                          </h5>
+                          <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                            Mendukung QRIS, Virtual Account, dan Transfer Bank. Akun langsung aktif otomatis dalam 1 menit setelah transaksi sukses.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => handleUpgrade(selectedPlan)}
+                          disabled={loadingUpgrade !== null}
+                          className="w-full bg-cyan-600 hover:bg-cyan-500 text-white text-xs py-2 h-auto"
+                        >
+                          {loadingUpgrade ? "Memproses..." : "Gunakan Pembayaran Otomatis"}
+                        </Button>
+                      </div>
+                      
+                      {/* Metode B: Manual Transfer */}
+                      <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.02] space-y-3">
+                        <div>
+                          <h5 className="text-sm font-bold text-amber-400 flex items-center gap-1.5">
+                            <MessageSquare className="w-4 h-4 text-amber-400" />
+                            Transfer Bank Manual & Konfirmasi WA
+                          </h5>
+                          <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                            Pilihan cepat jika iPaymu sedang dalam pemeliharaan atau verifikasi. Transfer manual lalu kirim bukti transfer ke WhatsApp admin.
+                          </p>
+                        </div>
+                        
+                        <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-2 text-xs">
+                          <div className="flex justify-between items-center text-gray-300">
+                            <span>Bank BCA:</span>
+                            <span className="font-mono font-bold text-white">8123456789</span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-300">
+                            <span>Bank Mandiri:</span>
+                            <span className="font-mono font-bold text-white">1234567890123</span>
+                          </div>
+                          <div className="flex justify-between items-center text-gray-300 border-t border-white/5 pt-1.5">
+                            <span>Atas Nama:</span>
+                            <span className="font-semibold text-white">CoolService Admin</span>
+                          </div>
+                          <div className="flex justify-between items-center text-amber-300 font-bold border-t border-dashed border-white/10 pt-1.5">
+                            <span>Jumlah Transfer:</span>
+                            <span>{selectedPlan === "starter" ? "Rp 99.000" : "Rp 199.000"}</span>
+                          </div>
+                        </div>
+
+                        <a 
+                          href={getWhatsAppLink(selectedPlan)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-extrabold text-xs py-3 rounded-md transition-all shadow-md shadow-amber-500/10 hover:shadow-amber-500/20"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Konfirmasi via WhatsApp (Proses Cepat)
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-start gap-2 text-[10px] text-gray-500 pt-2 bg-white/[0.01] p-3 rounded-lg border border-white/5">
-                  <AlertCircle className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <span>Pembayaran diproses dengan aman oleh iPaymu (Indonesia). Pembayaran instan mendukung QRIS, Virtual Account, dan Transfer Bank.</span>
-                </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
