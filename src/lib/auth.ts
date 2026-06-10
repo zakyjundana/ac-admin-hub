@@ -101,8 +101,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 /** Cek apakah Supabase sudah dikonfigurasi */
 export function isSupabaseConfigured() {
   return (
-    !!import.meta.env.VITE_SUPABASE_URL &&
-    !!import.meta.env.VITE_SUPABASE_ANON_KEY
+    (!!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY) ||
+    (!!import.meta.env.VITE_SB_URL && !!import.meta.env.VITE_SB_ANON_KEY)
   );
 }
 
