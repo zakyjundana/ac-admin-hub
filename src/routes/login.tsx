@@ -1,4 +1,5 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+// Trigger commit update for Lovable GitHub sync
 import { useState } from "react";
 import {
   Wrench,
