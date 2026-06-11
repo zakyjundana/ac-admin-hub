@@ -24,4 +24,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  define: {
+    "import.meta.env.VITE_SB_URL": JSON.stringify(process.env.SB_URL || process.env.VITE_SB_URL || ""),
+    "import.meta.env.VITE_SB_ANON_KEY": JSON.stringify(process.env.SB_ANON_KEY || process.env.VITE_SB_ANON_KEY || ""),
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(process.env.SB_URL || process.env.VITE_SUPABASE_URL || ""),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(process.env.SB_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || ""),
+  }
 });
