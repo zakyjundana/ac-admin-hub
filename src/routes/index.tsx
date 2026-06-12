@@ -15,6 +15,7 @@ import {
   Zap,
   TrendingUp,
   Award,
+  Mail,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -407,21 +408,48 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-6 text-center text-sm text-gray-600">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-            <Wrench className="w-3 h-3 text-white" />
+      <footer className="border-t border-white/5 py-12 px-6 bg-[#0a0a0f]">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+                <Wrench className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-semibold text-gray-200 text-lg">CoolService</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4 leading-relaxed max-w-sm">
+              Aplikasi manajemen operasional bisnis service AC terlengkap di Indonesia. 
+              Membantu tukang AC menjadi lebih profesional dan teratur.
+            </p>
+            <p className="text-sm text-gray-500">© 2026 CoolService. Hak Cipta Dilindungi.</p>
           </div>
-          <span className="font-semibold text-gray-400">CoolService</span>
-        </div>
-        <p>© 2026 CoolService. Dibuat untuk tukang AC Indonesia.</p>
-        <div className="flex justify-center gap-6 mt-3 text-xs">
-          <Link to="/terms" className="hover:text-gray-400 transition-colors">Syarat & Ketentuan</Link>
-          <Link to="/refund" className="hover:text-gray-400 transition-colors">Kebijakan Refund</Link>
-          <Link to="/faq" className="hover:text-gray-400 transition-colors">FAQ</Link>
-          <a href="https://wa.me/628123456789" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors flex items-center gap-1">
-            <Phone className="w-3 h-3" /> Hubungi Kami
-          </a>
+          
+          <div>
+            <h3 className="text-white font-semibold mb-4">Informasi Kontak</h3>
+            <ul className="space-y-3 text-sm text-gray-400">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                <span className="leading-relaxed">Komplek Bintara Jaya Permai Blok C280, Bintara, Bekasi Barat, Kota Bekasi, Jawa Barat</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <a href="mailto:zakyjundana@gmail.com" className="hover:text-white transition-colors">zakyjundana@gmail.com</a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <a href="https://wa.me/6285174284456" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">0851-7428-4456</a>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-white font-semibold mb-4">Tautan Penting</h3>
+            <ul className="space-y-3 text-sm text-gray-400 flex flex-col items-start">
+              <li><Link to="/terms" className="hover:text-white transition-colors">Syarat & Ketentuan</Link></li>
+              <li><Link to="/refund" className="hover:text-white transition-colors">Kebijakan Refund</Link></li>
+              <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
+            </ul>
+          </div>
         </div>
       </footer>
     </div>
