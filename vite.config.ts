@@ -1,22 +1,4 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-// Get current directory name in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Dynamically generate .env file during build from Lovable Secrets
-if (process.env.SB_URL && process.env.SB_ANON_KEY) {
-  try {
-    const envContent = `VITE_SB_URL=${process.env.SB_URL}\nVITE_SB_ANON_KEY=${process.env.SB_ANON_KEY}\n`;
-    fs.writeFileSync(path.resolve(__dirname, ".env"), envContent);
-    console.log("[Build] Successfully generated .env file from Lovable Secrets.");
-  } catch (err) {
-    console.error("[Build] Failed to generate .env file:", err);
-  }
-}
 
 // Detect Supabase URL from any possible environment variable name
 const supabaseUrl = 
@@ -53,5 +35,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  define: defineOverrides
+  vite: {
+    define: defineOverrides,
+  }
 });
