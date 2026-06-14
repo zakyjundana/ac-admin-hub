@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Wrench,
@@ -15,10 +15,18 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { isSupabaseConfigured } from "@/lib/auth";
+import { isSupabaseConfigured, getSession } from "@/lib/auth";
 import { store } from "@/lib/dataStore";
 
 export const Route = createFileRoute("/onboarding")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    if (!isSupabaseConfigured()) return;
+    const session = await getSession();
+    if (!session) {
+      throw redirect({ to: "/login" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Setup Profil Bisnis & Teknisi - CoolService" },

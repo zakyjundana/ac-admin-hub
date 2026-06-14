@@ -39,6 +39,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [needVerification, setNeedVerification] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     nama: "",
@@ -70,18 +71,25 @@ export default function RegisterPage() {
 
     try {
       if (isSupabaseConfigured()) {
-        await signUp({
+        const data = await signUp({
           email: form.email,
           password: form.password,
           nama: form.nama,
           namaBisnis: form.namaBisnis,
           noHp: form.noHp,
         });
-        setSuccess(true);
-        // Lanjut onboarding setelah 1.5 detik
-        setTimeout(() => (window.location.href = "/onboarding"), 1500);
+        
+        if (data?.session) {
+          setSuccess(true);
+          // Lanjut onboarding setelah 1.5 detik
+          setTimeout(() => (window.location.href = "/onboarding"), 1500);
+        } else {
+          // Email confirmation is enabled in Supabase
+          setNeedVerification(true);
+        }
       } else {
         // Mode demo — langsung ke onboarding
+        setSuccess(true);
         setTimeout(() => (window.location.href = "/onboarding"), 800);
       }
     } catch (err: unknown) {
@@ -116,6 +124,26 @@ export default function RegisterPage() {
       toast.error(err.message || "Gagal daftar dengan Google.");
       setLoading(false);
     }
+  }
+
+  if (needVerification) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-10 h-10 text-blue-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Verifikasi Email Anda</h2>
+          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+            Link konfirmasi telah dikirim ke <strong>{form.email}</strong>. 
+            Silakan klik link tersebut untuk mengaktifkan akun Anda sebelum melakukan setup bisnis.
+          </p>
+          <Link to="/login" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/25">
+            Ke Halaman Masuk
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (success) {
