@@ -89,6 +89,27 @@ function DashboardPage() {
     return orderan.filter((o) => o.status === "Selesai" && o.tanggal.startsWith("2026-06"));
   }, [orderan]);
 
+  const demoMode = useStore((s) => s.demoMode);
+
+  // Load custom operational expenses
+  const opExpenses = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("coolservice_op_expenses");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return {
+      transportBensin: 0,
+      sewaRuko: 0,
+      listrikInternet: 0,
+    };
+  }, [demoMode]); // Refresh if demoMode changes
+
   const financialsJune = useMemo(() => {
     const basicSalary = 3500000;
     const totalGajiTeknisi = teknisi.map((t) => {
@@ -99,9 +120,9 @@ function DashboardPage() {
 
     const sparePartsProcurement = juneCompletedOrders.reduce((sum, o) => sum + getOrderPartsCost(o), 0);
     
-    const transportBensin = 1500000;
-    const sewaRuko = 4000000;
-    const listrikInternet = 850000;
+    const transportBensin = demoMode ? 1500000 : opExpenses.transportBensin;
+    const sewaRuko = demoMode ? 4000000 : opExpenses.sewaRuko;
+    const listrikInternet = demoMode ? 850000 : opExpenses.listrikInternet;
     const totalExpenses = totalGajiTeknisi + sparePartsProcurement + transportBensin + sewaRuko + listrikInternet;
 
     const totalRevenue = juneCompletedOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
@@ -111,7 +132,7 @@ function DashboardPage() {
       expenses: totalExpenses,
       netProfit: totalRevenue - totalExpenses,
     };
-  }, [juneCompletedOrders, teknisi, sparepart]);
+  }, [juneCompletedOrders, teknisi, sparepart, demoMode, opExpenses]);
 
   // Combine historical data with June 2026 live calculations
   const chartData = useMemo(() => {

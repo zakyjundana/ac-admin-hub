@@ -10,13 +10,16 @@ import {
   ArrowDownRight, 
   Receipt, 
   Wallet,
-  Activity
+  Activity,
+  Settings
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { useStore } from "@/lib/dataStore";
 import { type Orderan, type SparePart } from "@/lib/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/keuangan")({
   head: () => ({ meta: [{ title: "Keuangan & Insentif — CoolService" }] }),
@@ -29,10 +32,46 @@ function KeuanganPage() {
   const orderan = useStore((s) => s.orderan);
   const teknisi = useStore((s) => s.teknisi);
   const sparepart = useStore((s) => s.sparepart);
+  const demoMode = useStore((s) => s.demoMode);
 
   // States
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [selectedMonth, setSelectedMonth] = useState<string>("2026-06"); // Format YYYY-MM
+
+  // States for manual operational expenses input
+  const [opExpenses, setOpExpenses] = useState<{
+    transportBensin: number;
+    sewaRuko: number;
+    listrikInternet: number;
+  }>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("coolservice_op_expenses");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return {
+      transportBensin: 0,
+      sewaRuko: 0,
+      listrikInternet: 0,
+    };
+  });
+
+  const [isEditingExpenses, setIsEditingExpenses] = useState(false);
+  const [tempExpenses, setTempExpenses] = useState(opExpenses);
+
+  const handleSaveExpenses = () => {
+    setOpExpenses(tempExpenses);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("coolservice_op_expenses", JSON.stringify(tempExpenses));
+    }
+    setIsEditingExpenses(false);
+    toast.success("Pengeluaran operasional berhasil diperbarui");
+  };
 
   // Helper classification & calculations
   const isCuci = (keluhan: string) => {
@@ -117,10 +156,10 @@ function KeuanganPage() {
     const totalGajiTeknisi = monthlySalaryRecap.reduce((sum, t) => sum + t.total, 0);
     const sparePartsProcurement = monthlyCompletedOrders.reduce((sum, o) => sum + getOrderPartsCost(o), 0);
     
-    // Constant operational expenses
-    const transportBensin = 1500000;
-    const sewaRuko = 4000000;
-    const listrikInternet = 850000;
+    // Constant operational expenses or loaded values
+    const transportBensin = demoMode ? 1500000 : opExpenses.transportBensin;
+    const sewaRuko = demoMode ? 4000000 : opExpenses.sewaRuko;
+    const listrikInternet = demoMode ? 850000 : opExpenses.listrikInternet;
     const totalExpenses = totalGajiTeknisi + sparePartsProcurement + transportBensin + sewaRuko + listrikInternet;
 
     // Monthly Revenue
@@ -136,7 +175,7 @@ function KeuanganPage() {
       sewaRuko,
       listrikInternet,
     };
-  }, [monthlyCompletedOrders, monthlySalaryRecap]);
+  }, [monthlyCompletedOrders, monthlySalaryRecap, demoMode, opExpenses]);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -368,11 +407,74 @@ function KeuanganPage() {
 
           {/* Operational Expenses Table */}
           <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <div className="border-b border-border pb-3 mb-4">
-              <h3 className="text-lg font-bold">Pengeluaran Operasional</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Breakdown pengeluaran operasional perusahaan bulan {selectedMonth}.
-              </p>
+            <div className="border-b border-border pb-3 mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold">Pengeluaran Operasional</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Breakdown pengeluaran operasional perusahaan bulan {selectedMonth}.
+                </p>
+              </div>
+              {!demoMode && (
+                <Dialog open={isEditingExpenses} onOpenChange={setIsEditingExpenses}>
+                  <DialogTrigger asChild>
+                    <button 
+                      onClick={() => setTempExpenses(opExpenses)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-white/[0.02] hover:bg-white/[0.06] text-xs font-semibold text-foreground transition-all cursor-pointer"
+                    >
+                      <Settings className="size-3.5 text-muted-foreground" />
+                      Edit Pengeluaran
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md bg-[#0f0f15] border border-white/5 text-white shadow-2xl rounded-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-lg font-bold text-white">Edit Pengeluaran Operasional</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-400">Transportasi & Bensin Teknisi (Rp)</Label>
+                        <Input 
+                          type="number"
+                          value={tempExpenses.transportBensin}
+                          onChange={(e) => setTempExpenses(prev => ({ ...prev, transportBensin: Number(e.target.value) }))}
+                          className="bg-white/[0.06] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-400">Sewa Kantor / Ruko (Rp)</Label>
+                        <Input 
+                          type="number"
+                          value={tempExpenses.sewaRuko}
+                          onChange={(e) => setTempExpenses(prev => ({ ...prev, sewaRuko: Number(e.target.value) }))}
+                          className="bg-white/[0.06] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-400">Listrik, Air, & Internet (Rp)</Label>
+                        <Input 
+                          type="number"
+                          value={tempExpenses.listrikInternet}
+                          onChange={(e) => setTempExpenses(prev => ({ ...prev, listrikInternet: Number(e.target.value) }))}
+                          className="bg-white/[0.06] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter className="flex gap-2">
+                      <button 
+                        onClick={() => setIsEditingExpenses(false)}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-sm text-gray-400 transition-all cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        onClick={handleSaveExpenses}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+                      >
+                        Simpan
+                      </button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left border-collapse">
@@ -393,15 +495,15 @@ function KeuanganPage() {
                   </tr>
                   <tr>
                     <td className="py-2.5 font-medium text-foreground">Transportasi & Bensin Teknisi</td>
-                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(1500000)}</td>
+                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(financials.transportBensin)}</td>
                   </tr>
                   <tr>
                     <td className="py-2.5 font-medium text-foreground">Sewa Kantor / Ruko</td>
-                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(4000000)}</td>
+                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(financials.sewaRuko)}</td>
                   </tr>
                   <tr>
                     <td className="py-2.5 font-medium text-foreground">Listrik, Air, & Internet</td>
-                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(850000)}</td>
+                    <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(financials.listrikInternet)}</td>
                   </tr>
                   <tr className="border-t border-border pt-2 font-bold text-sm bg-accent/20">
                     <td className="py-3 px-2 rounded-l-lg text-foreground">Total Pengeluaran</td>
