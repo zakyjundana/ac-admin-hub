@@ -18,25 +18,33 @@ if (process.env.SB_URL && process.env.SB_ANON_KEY) {
   }
 }
 
+// Detect Supabase URL from any possible environment variable name
+const supabaseUrl = 
+  process.env.SB_URL || 
+  process.env.VITE_SB_URL || 
+  process.env.VITE_SUPABASE_URL || 
+  process.env.SUPABASE_URL || 
+  "";
+
+// Detect Supabase Anon Key from any possible environment variable name
+const supabaseAnonKey = 
+  process.env.SB_ANON_KEY || 
+  process.env.VITE_SB_ANON_KEY || 
+  process.env.VITE_SUPABASE_ANON_KEY || 
+  process.env.SUPABASE_ANON_KEY || 
+  "";
+
 // Build defines object
 const defineOverrides: Record<string, string> = {};
 
-// ONLY override variables in define if we actually have custom process.env values.
-// This prevents overriding the default Vite environment variables loaded from platform injection/dotfiles.
-if (process.env.SB_URL) {
-  defineOverrides["import.meta.env.VITE_SB_URL"] = JSON.stringify(process.env.SB_URL);
-  defineOverrides["import.meta.env.VITE_SUPABASE_URL"] = JSON.stringify(process.env.SB_URL);
-} else if (process.env.VITE_SB_URL) {
-  defineOverrides["import.meta.env.VITE_SB_URL"] = JSON.stringify(process.env.VITE_SB_URL);
-  defineOverrides["import.meta.env.VITE_SUPABASE_URL"] = JSON.stringify(process.env.VITE_SB_URL);
+// ONLY override variables in define if we actually have values detected from process.env at build time.
+if (supabaseUrl) {
+  defineOverrides["import.meta.env.VITE_SUPABASE_URL"] = JSON.stringify(supabaseUrl);
+  defineOverrides["import.meta.env.VITE_SB_URL"] = JSON.stringify(supabaseUrl);
 }
-
-if (process.env.SB_ANON_KEY) {
-  defineOverrides["import.meta.env.VITE_SB_ANON_KEY"] = JSON.stringify(process.env.SB_ANON_KEY);
-  defineOverrides["import.meta.env.VITE_SUPABASE_ANON_KEY"] = JSON.stringify(process.env.SB_ANON_KEY);
-} else if (process.env.VITE_SB_ANON_KEY) {
-  defineOverrides["import.meta.env.VITE_SB_ANON_KEY"] = JSON.stringify(process.env.VITE_SB_ANON_KEY);
-  defineOverrides["import.meta.env.VITE_SUPABASE_ANON_KEY"] = JSON.stringify(process.env.VITE_SB_ANON_KEY);
+if (supabaseAnonKey) {
+  defineOverrides["import.meta.env.VITE_SUPABASE_ANON_KEY"] = JSON.stringify(supabaseAnonKey);
+  defineOverrides["import.meta.env.VITE_SB_ANON_KEY"] = JSON.stringify(supabaseAnonKey);
 }
 
 export default defineConfig({
