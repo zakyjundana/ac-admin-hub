@@ -34,6 +34,12 @@ export const Route = createFileRoute("/login")({
 });
 
 export default function LoginPage() {
+  console.log("Supabase config:", {
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SB_URL: import.meta.env.VITE_SB_URL,
+    isConfigured: isSupabaseConfigured()
+  });
+
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");

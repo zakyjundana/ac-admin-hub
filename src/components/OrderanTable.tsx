@@ -134,7 +134,7 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                           const tglIndo = formatTanggalIndo(o.tanggal);
                           const namaBisnis = user?.namaBisnis || "CoolService";
                           const template = `Halo Bapak/Ibu ${o.nama_pelanggan},\n\nKami dari ${namaBisnis} mengabarkan bahwa teknisi kami dijadwalkan akan berkunjung ke tempat Anda:\n\n📅 Hari/Tgl: ${tglIndo}\n⏰ Jam: ${o.jam} WIB\n🛠️ Pekerjaan: ${o.keluhan}\n👨‍🔧 Teknisi: ${tek.nama} (${tek.no_hp})\n\nMohon konfirmasinya jika waktu tersebut sudah sesuai. Terima kasih!`;
-                          setSharingData({ order: o, tek, type: "jadwal" });
+                          setSharingData({ order: o, tek: tek ?? null, type: "jadwal" });
                           setPesanShare(template);
                         }}
                       >
@@ -173,7 +173,7 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                       const rupiahCost = "Rp " + totalBiaya.toLocaleString("id-ID");
 
                       const template = `Halo Bapak/Ibu ${o.nama_pelanggan},\n\nTerima kasih telah menggunakan jasa ${namaBisnis}.\n\nServis AC Anda untuk pekerjaan "${o.keluhan}" telah selesai dikerjakan oleh teknisi kami (${tek?.nama || "—"}).\n\nDetail Transaksi:\n📅 Tanggal Selesai: ${tglIndo}\n💰 Total Biaya: ${rupiahCost}\n🛡️ Garansi: 30 Hari sejak pengerjaan\n\nSemoga Anda puas dengan layanan kami. Terima kasih!`;
-                      setSharingData({ order: o, tek, type: "invoice" });
+                      setSharingData({ order: o, tek: tek ?? null, type: "invoice" });
                       setPesanShare(template);
                     }}
                   >

@@ -257,8 +257,10 @@ export const store = {
           for (const sp of partsToReduce) {
             const targetSp = state.sparepart.find(x => x.id === sp.sparepart_id);
             if (targetSp) {
-              supabase.from("ac_spareparts").update({ stok: targetSp.stok }).eq("id", targetSp.id).eq("user_id", currentUserId)
-                .catch(err => console.error("Error updating stock:", err));
+              const { error } = await supabase.from("ac_spareparts").update({ stok: targetSp.stok }).eq("id", targetSp.id).eq("user_id", currentUserId);
+              if (error) {
+                console.error("Error updating stock:", error);
+              }
             }
           }
         }
@@ -281,8 +283,10 @@ export const store = {
         };
         state = { ...state, riwayat: [...state.riwayat, r] };
         if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
-          supabase.from("ac_riwayat").insert({ ...r, user_id: currentUserId })
-            .catch(err => console.error("Error inserting riwayat:", err));
+          const { error } = await supabase.from("ac_riwayat").insert({ ...r, user_id: currentUserId });
+          if (error) {
+            console.error("Error inserting riwayat:", error);
+          }
         }
       }
     }

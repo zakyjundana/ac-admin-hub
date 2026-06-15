@@ -30,7 +30,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { useStore, store } from "@/lib/dataStore";
-import { WILAYAH_LIST } from "@/lib/mockData";
+import { WILAYAH_LIST, type Orderan } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,7 +117,7 @@ function BookingPage() {
   // Check availability status of a day
   const getDayAvailability = (date: Date) => {
     const key = format(date, "yyyy-MM-dd");
-    const count = shopOrders.filter((o) => o.tanggal === key).length;
+    const count = shopOrders.filter((o: Orderan) => o.tanggal === key).length;
     
     if (count >= 5) return { status: "penuh", label: "Penuh", color: "bg-red-500" };
     if (count >= 2) return { status: "terbatas", label: "Slot Terbatas", color: "bg-amber-500" };
