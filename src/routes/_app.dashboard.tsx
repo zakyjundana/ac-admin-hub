@@ -167,6 +167,37 @@ function DashboardPage() {
     return sparepart.filter((sp) => sp.stok <= sp.stok_minimum);
   }, [sparepart]);
 
+  if (!isMounted) {
+    return (
+      <div className="space-y-8 max-w-7xl mx-auto animate-pulse p-4">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-2 flex-1">
+            <div className="h-8 bg-white/5 rounded-xl w-64" />
+            <div className="h-4 bg-white/5 rounded-lg w-96" />
+          </div>
+          <div className="h-10 bg-white/5 rounded-xl w-44" />
+        </div>
+
+        {/* KPI Widgets Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-card/40 border border-border/40 rounded-2xl p-5 h-32 flex flex-col justify-between" />
+          ))}
+        </div>
+
+        {/* Charts and details Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 bg-card/40 border border-border/40 rounded-2xl p-6 h-96" />
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-card/40 border border-border/40 rounded-2xl p-6 h-44" />
+            <div className="bg-card/40 border border-border/40 rounded-2xl p-6 h-44" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}

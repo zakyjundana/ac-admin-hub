@@ -11,7 +11,22 @@ export function useIsConfigured(): boolean {
   const [configured, setConfigured] = useState(false);
 
   useEffect(() => {
+    // Set immediate status on mount
     setConfigured(isSupabaseConfigured());
+
+    const handler = () => {
+      setConfigured(true);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("supabase-configured", handler);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("supabase-configured", handler);
+      }
+    };
   }, []);
 
   return configured;

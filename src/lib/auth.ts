@@ -109,6 +109,9 @@ let runtimeConfigured = false;
 
 export function setRuntimeConfigured(configured: boolean) {
   runtimeConfigured = configured;
+  if (typeof window !== "undefined" && configured) {
+    window.dispatchEvent(new Event("supabase-configured"));
+  }
 }
 
 /** Cek apakah Supabase sudah dikonfigurasi */
