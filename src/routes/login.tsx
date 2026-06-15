@@ -1,7 +1,8 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 // Trigger commit update for Lovable GitHub sync
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsConfigured } from "@/hooks/useIsConfigured";
+import { isSupabaseConfigured } from "@/lib/auth";
 import {
   Wrench,
   Eye,
@@ -39,6 +40,11 @@ export const Route = createFileRoute("/login")({
 export default function LoginPage() {
   const isConfigured = useIsConfigured();
   const { user } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -87,16 +93,25 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    if (!isConfigured) {
-      toast.error("Supabase belum dikonfigurasi.");
+    // Call isSupabaseConfigured() directly (not hook) to get real-time value
+    if (!isSupabaseConfigured()) {
+      toast.error("Login Google tidak tersedia di mode demo.");
       return;
     }
     setLoading(true);
     try {
+      // Use window.location.origin for the redirect, but ensure it points to the
+      // correct production domain (not localhost from dev/SSR context).
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin.includes("localhost")
+            ? "https://coolboard.lovable.app"
+            : window.location.origin
+          : "https://coolboard.lovable.app";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/login`,
+          redirectTo: `${origin}/login`,
         },
       });
       if (error) throw error;
@@ -185,7 +200,7 @@ export default function LoginPage() {
           </p>
 
           {/* Demo mode notice — only shown after client mount to avoid hydration mismatch */}
-          {!isConfigured && (
+          {isMounted && !isConfigured && (
             <div className="mb-6 flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>Mode demo aktif — klik Masuk untuk langsung ke dashboard.</span>
