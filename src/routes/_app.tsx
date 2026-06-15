@@ -5,9 +5,6 @@ import { checkServerSession } from "@/lib/api/config.functions";
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
-    // If Supabase is not configured (demo mode), skip auth guard
-    if (!isSupabaseConfigured()) return;
-
     let isAuthenticated = false;
     if (typeof window === "undefined") {
       // Server-side (SSR) cookie check using server function

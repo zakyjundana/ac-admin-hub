@@ -67,25 +67,14 @@ export const insertClientBooking = createServerFn({ method: "POST" })
         auth: { persistSession: false }
       });
 
-      // 1. Verify that shopId actually exists by checking if there's any teknisi associated with it
-      // This confirms they are a valid registered shop in the system.
-      const { data: activeShop, error: checkError } = await supabaseAdmin
-        .from("ac_teknisi")
-        .select("id")
-        .eq("user_id", data.shopId)
-        .limit(1);
-
-      if (checkError) {
-        console.error("Failed to verify shop validation in Supabase:", checkError);
-        throw new Error("Gagal memverifikasi toko.");
-      }
-
-      if (!activeShop || activeShop.length === 0) {
-        console.warn(`Booking blocked: shopId ${data.shopId} is not a valid registered shop.`);
+      // 1. Verify that shop actually exists in auth.users and has completed onboarding
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(data.shopId);
+      if (userError || !userData?.user || !userData.user.user_metadata?.onboarding_done) {
+        console.warn(`Booking blocked: shopId ${data.shopId} does not exist or has not completed onboarding.`, userError);
         throw new Error("Toko tidak terdaftar atau belum aktif.");
       }
 
-      // 2. Perform secure insert
+      // 2. Perform secure insert forcing default safe values for public client bookings
       const { error: insertError } = await supabaseAdmin
         .from("ac_orderan")
         .insert({
@@ -94,8 +83,8 @@ export const insertClientBooking = createServerFn({ method: "POST" })
           alamat: data.booking.alamat,
           wilayah: data.booking.wilayah,
           keluhan: data.booking.keluhan,
-          status: data.booking.status,
-          teknisi_id: data.booking.teknisi_id,
+          status: "Belum Selesai",
+          teknisi_id: null,
           tanggal: data.booking.tanggal,
           jam: data.booking.jam,
           sumber: "Mandiri",

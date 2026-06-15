@@ -11,6 +11,7 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       noHp: z.string(),
       planName: z.enum(["starter", "pro"]),
       origin: z.string(),
+      accessToken: z.string().optional(),
     }),
   )
   .handler(async ({ data }) => {
@@ -23,6 +24,50 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       env.IPAYMU_SANDBOX === "true" ||
       va.startsWith("0000") ||
       apiKey === "sandbox-api-key";
+
+    // Supabase Validation to prevent IDOR
+    const url =
+      env.SB_URL ||
+      env.VITE_SB_URL ||
+      env.VITE_SUPABASE_URL ||
+      env.SUPABASE_URL ||
+      "";
+    const anonKey =
+      env.SB_ANON_KEY ||
+      env.VITE_SB_ANON_KEY ||
+      env.VITE_SUPABASE_ANON_KEY ||
+      env.SUPABASE_ANON_KEY ||
+      "";
+
+    const isSupabaseConfigured = !!url && !!anonKey;
+
+    let finalUserId = data.userId;
+    let finalEmail = data.email;
+    let finalNama = data.nama;
+    let finalNoHp = data.noHp;
+
+    if (isSupabaseConfigured) {
+      if (!data.accessToken) {
+        throw new Error("Akses ditolak: Token autentikasi diperlukan.");
+      }
+
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabase = createClient(url, anonKey, {
+        auth: { persistSession: false },
+      });
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser(data.accessToken);
+      if (userError || !user) {
+        console.error("Token verification failed in createIPaymuPayment:", userError);
+        throw new Error("Akses ditolak: Token autentikasi tidak valid.");
+      }
+
+      // Override client parameters with secure values from auth session JWT
+      finalUserId = user.id;
+      finalEmail = user.email || "";
+      finalNama = user.user_metadata?.nama || "Pengguna";
+      finalNoHp = user.user_metadata?.no_hp || "";
+    }
 
     const baseUrl = isSandbox
       ? "https://sandbox.ipaymu.com/api/v2/payment"
@@ -42,10 +87,10 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       returnUrl: `${data.origin}/profil?payment=success`,
       cancelUrl: `${data.origin}/profil?payment=cancel`,
       notifyUrl: `${data.origin}/api/public/ipaymu-webhook`,
-      referenceId: `${data.userId}:${data.planName}`,
-      buyerName: data.nama,
-      buyerEmail: data.email,
-      buyerPhone: data.noHp,
+      referenceId: `${finalUserId}:${data.planName}`,
+      buyerName: finalNama,
+      buyerEmail: finalEmail,
+      buyerPhone: finalNoHp,
     };
 
     try {

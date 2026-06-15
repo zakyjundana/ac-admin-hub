@@ -21,8 +21,6 @@ import { checkServerSession } from "@/lib/api/config.functions";
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
-    if (!isSupabaseConfigured()) return;
-
     let isAuthenticated = false;
     if (typeof window === "undefined") {
       const res = await checkServerSession();

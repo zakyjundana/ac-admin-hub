@@ -101,6 +101,26 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
     }
     setLoadingUpgrade(plan);
     try {
+      if (!isConfigured) {
+        // Mode demo: langsung upgrade di localStorage & reload secara lokal
+        const updatedUser = {
+          ...displayUser,
+          subscriptionTier: plan,
+          subscriptionStatus: "active",
+        };
+        localStorage.setItem("demo_user_profile", JSON.stringify(updatedUser));
+        toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        return;
+      }
+
+      // Secure mode: pass accessToken untuk memverifikasi session di server
+      const { getSession } = await import("@/lib/auth");
+      const session = await getSession();
+      const accessToken = session?.access_token || "";
+
       const res = await ipaymuFn({
         data: {
           userId: displayUser.id,
@@ -109,6 +129,7 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
           noHp: displayUser.noHp || "",
           planName: plan,
           origin: window.location.origin,
+          accessToken,
         },
       });
 

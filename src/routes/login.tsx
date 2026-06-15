@@ -15,6 +15,8 @@ import {
 import { signIn, isSupabaseConfigured, getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
@@ -36,6 +38,13 @@ export const Route = createFileRoute("/login")({
 
 export default function LoginPage() {
   const isConfigured = useIsConfigured();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      window.location.href = "/dashboard";
+    }
+  }, [user]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -58,6 +67,9 @@ export default function LoginPage() {
         window.location.href = "/dashboard";
       } else {
         // Mode demo — langsung ke dashboard
+        if (typeof document !== "undefined") {
+          document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
+        }
         setTimeout(() => (window.location.href = "/dashboard"), 800);
       }
     } catch (err: unknown) {
@@ -84,7 +96,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/login`,
         },
       });
       if (error) throw error;

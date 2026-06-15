@@ -8,42 +8,38 @@ export const Route = createFileRoute("/api/public/ipaymu-webhook")({
         try {
           console.log("Received iPaymu Webhook Callback...");
 
-          // Signature Verification
+          // Signature Verification (Mandatory)
           const env = typeof process !== "undefined" ? process.env : {};
-          const apiKey = env.IPAYMU_API_KEY;
-          const va = env.IPAYMU_VA;
+          const apiKey = env.IPAYMU_API_KEY || "sandbox-api-key";
+          const va = env.IPAYMU_VA || "0000007890123456";
 
-          if (apiKey && va) {
-            const incomingSignature = request.headers.get("signature") || "";
-            const incomingTimestamp = request.headers.get("timestamp") || "";
-            
-            const rawBody = await request.clone().text();
-            const crypto = await import("node:crypto");
-            const bodyHash = crypto
-              .createHash("sha256")
-              .update(rawBody)
-              .digest("hex")
-              .toLowerCase();
-            const stringToSign = `POST:${va}:${bodyHash}:${incomingTimestamp}`;
-            const expectedSignature = crypto
-              .createHmac("sha256", apiKey)
-              .update(stringToSign)
-              .digest("hex");
+          const incomingSignature = request.headers.get("signature") || "";
+          const incomingTimestamp = request.headers.get("timestamp") || "";
+          
+          const rawBody = await request.clone().text();
+          const crypto = await import("node:crypto");
+          const bodyHash = crypto
+            .createHash("sha256")
+            .update(rawBody)
+            .digest("hex")
+            .toLowerCase();
+          const stringToSign = `POST:${va}:${bodyHash}:${incomingTimestamp}`;
+          const expectedSignature = crypto
+            .createHmac("sha256", apiKey)
+            .update(stringToSign)
+            .digest("hex");
 
-            if (incomingSignature !== expectedSignature) {
-              console.warn("iPaymu Webhook Signature Verification FAILED!", {
-                incoming: incomingSignature,
-                expected: expectedSignature,
-              });
-              return new Response(JSON.stringify({ status: "error", message: "Invalid signature" }), {
-                status: 401,
-                headers: { "Content-Type": "application/json" },
-              });
-            }
-            console.log("iPaymu Webhook Signature Verified Successfully!");
-          } else {
-            console.warn("iPaymu credentials not configured; skipping signature verification (sandbox fallback).");
+          if (incomingSignature !== expectedSignature) {
+            console.warn("iPaymu Webhook Signature Verification FAILED!", {
+              incoming: incomingSignature,
+              expected: expectedSignature,
+            });
+            return new Response(JSON.stringify({ status: "error", message: "Invalid signature" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
           }
+          console.log("iPaymu Webhook Signature Verified Successfully!");
           
           let referenceId = "";
           let statusCode = "";

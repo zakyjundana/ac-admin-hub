@@ -37,15 +37,34 @@ function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
   const { user } = useAuth();
   const [showShare, setShowShare] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [opExpenses, setOpExpenses] = useState({
+    transportBensin: 0,
+    sewaRuko: 0,
+    listrikInternet: 0,
+  });
+  const [bookingUrl, setBookingUrl] = useState("https://coolboard.lovable.app/book?shop=demo-user-id");
 
   const orderan = useStore((s) => s.orderan);
   const teknisi = useStore((s) => s.teknisi);
   const sparepart = useStore((s) => s.sparepart);
   const feedback = useStore((s) => s.feedback);
+  const demoMode = useStore((s) => s.demoMode);
+
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Load custom operational expenses on client mount
+    const saved = localStorage.getItem("coolservice_op_expenses");
+    if (saved) {
+      try {
+        setOpExpenses(JSON.parse(saved));
+      } catch {}
+    }
+
+    if (typeof window !== "undefined") {
+      setBookingUrl(`${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`);
+    }
+  }, [user, demoMode]);
 
   // Helper classification & calculations (Consistent with Keuangan page)
   const isCuci = (keluhan: string) => {
@@ -88,27 +107,6 @@ function DashboardPage() {
   const juneCompletedOrders = useMemo(() => {
     return orderan.filter((o) => o.status === "Selesai" && o.tanggal.startsWith("2026-06"));
   }, [orderan]);
-
-  const demoMode = useStore((s) => s.demoMode);
-
-  // Load custom operational expenses
-  const opExpenses = useMemo(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("coolservice_op_expenses");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // ignore
-        }
-      }
-    }
-    return {
-      transportBensin: 0,
-      sewaRuko: 0,
-      listrikInternet: 0,
-    };
-  }, [demoMode]); // Refresh if demoMode changes
 
   const financialsJune = useMemo(() => {
     const basicSalary = 3500000;
@@ -360,19 +358,14 @@ function DashboardPage() {
             
             <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2">
               <span className="text-xs text-primary truncate select-all">
-                {typeof window !== "undefined" 
-                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`}
+                {bookingUrl}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 text-gray-400 hover:text-white shrink-0"
                 onClick={() => {
-                  const url = typeof window !== "undefined" 
-                    ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                    : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
-                  navigator.clipboard.writeText(url);
+                  navigator.clipboard.writeText(bookingUrl);
                   toast.success("Link berhasil disalin!");
                 }}
               >
@@ -393,10 +386,7 @@ function DashboardPage() {
               size="sm"
               className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold"
               onClick={() => {
-                const url = typeof window !== "undefined" 
-                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
-                const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${url}`;
+                const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${bookingUrl}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
                 setShowShare(false);
               }}

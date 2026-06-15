@@ -56,28 +56,18 @@ function ProfilPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("payment") === "success") {
-        const plan = params.get("plan") || "starter";
-        if (!isSupabaseConfigured()) {
-          // Demo/mock mode simulation
-          toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
-          setTimeout(() => {
-            window.location.href = "/profil";
-          }, 2000);
-        } else {
-          // Secure mode: do NOT upgrade client-side. The upgrade is handled securely on the server via webhook.
-          toast.success(`Pembayaran sukses! Transaksi Anda sedang diproses. Silakan tunggu beberapa saat.`);
-          setTimeout(() => {
-            window.location.href = "/profil";
-          }, 3000);
-        }
+        toast.success("Pembayaran sukses! Transaksi Anda sedang diproses. Silakan tunggu beberapa saat.");
+        setTimeout(() => {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }, 3000);
       } else if (params.get("payment") === "cancel") {
         toast.error("Pembayaran dibatalkan.");
         setTimeout(() => {
-          window.location.href = "/profil";
+          window.history.replaceState({}, document.title, window.location.pathname);
         }, 1500);
       }
     }
-  }, [user]);
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +120,26 @@ function ProfilPage() {
     }
     setLoadingUpgrade(plan);
     try {
+      if (!isSupabaseConfigured()) {
+        // Mode demo: langsung upgrade di localStorage & reload secara lokal
+        const updatedUser = {
+          ...user,
+          subscriptionTier: plan,
+          subscriptionStatus: "active",
+        };
+        localStorage.setItem("demo_user_profile", JSON.stringify(updatedUser));
+        toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        return;
+      }
+
+      // Secure mode: pass accessToken untuk memverifikasi session di server
+      const { getSession } = await import("@/lib/auth");
+      const session = await getSession();
+      const accessToken = session?.access_token || "";
+
       const res = await ipaymuFn({
         data: {
           userId: user.id,
@@ -138,6 +148,7 @@ function ProfilPage() {
           noHp: user.noHp || "",
           planName: plan,
           origin: window.location.origin,
+          accessToken,
         },
       });
 
