@@ -2,7 +2,6 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 // Trigger commit update for Lovable GitHub sync
 import { useState, useEffect } from "react";
 import { useIsConfigured } from "@/hooks/useIsConfigured";
-import { isSupabaseConfigured } from "@/lib/auth";
 import {
   Wrench,
   Eye,
@@ -17,7 +16,6 @@ import { signIn, isSupabaseConfigured, getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
