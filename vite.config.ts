@@ -1,5 +1,4 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 // Detect Supabase URL from any possible environment variable name
 const supabaseUrl =
@@ -38,15 +37,5 @@ export default defineConfig({
   },
   vite: {
     define: defineOverrides,
-    plugins: [
-      // Explicitly register TanStack Router plugin so Lovable's build server
-      // knows the exact routes directory path — fixes "Crawling result not available".
-      TanStackRouterVite({
-        routesDirectory: "./src/routes",
-        generatedRouteTree: "./src/routeTree.gen.ts",
-        quoteStyle: "double",
-        semicolons: false,
-      }),
-    ],
   },
 });
