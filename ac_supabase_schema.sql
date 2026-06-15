@@ -88,30 +88,36 @@ ALTER TABLE public.ac_riwayat ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ac_feedback ENABLE ROW LEVEL SECURITY;
 
 -- 1. Policies for ac_teknisi
+DROP POLICY IF EXISTS "Manage own teknisi" ON public.ac_teknisi;
 CREATE POLICY "Manage own teknisi" ON public.ac_teknisi 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
 
 -- 2. Policies for ac_spareparts
+DROP POLICY IF EXISTS "Manage own spareparts" ON public.ac_spareparts;
 CREATE POLICY "Manage own spareparts" ON public.ac_spareparts 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
 
 -- 3. Policies for ac_orderan
+DROP POLICY IF EXISTS "Manage own orderan" ON public.ac_orderan;
 CREATE POLICY "Manage own orderan" ON public.ac_orderan 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
 
 -- Allow public anonymous clients (online booking customer page) to insert orderans
+DROP POLICY IF EXISTS "Allow public booking insert" ON public.ac_orderan;
 CREATE POLICY "Allow public booking insert" ON public.ac_orderan 
     FOR INSERT WITH CHECK (true);
 
 -- 4. Policies for ac_riwayat
+DROP POLICY IF EXISTS "Manage own riwayat" ON public.ac_riwayat;
 CREATE POLICY "Manage own riwayat" ON public.ac_riwayat 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
 
 -- 5. Policies for ac_feedback
+DROP POLICY IF EXISTS "Manage own feedback" ON public.ac_feedback;
 CREATE POLICY "Manage own feedback" ON public.ac_feedback 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
@@ -130,6 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_ac_pengeluaran_user ON public.ac_pengeluaran(user
 
 ALTER TABLE public.ac_pengeluaran ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Manage own pengeluaran" ON public.ac_pengeluaran;
 CREATE POLICY "Manage own pengeluaran" ON public.ac_pengeluaran 
     FOR ALL USING (auth.uid()::text = user_id) 
     WITH CHECK (auth.uid()::text = user_id);
