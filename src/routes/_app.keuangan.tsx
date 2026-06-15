@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { 
   TrendingUp, 
   Coins, 
@@ -23,6 +23,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { useStore, store } from "@/lib/dataStore";
 import { type Orderan, type SparePart, type Pengeluaran } from "@/lib/mockData";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_app/keuangan")({
   head: () => ({ meta: [{ title: "Keuangan & Insentif — CoolService" }] }),
@@ -42,6 +45,92 @@ function KeuanganPage() {
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [selectedMonth, setSelectedMonth] = useState<string>("2026-06"); // Format YYYY-MM
   const [activeTab, setActiveTab] = useState<"ringkasan" | "catatan">("ringkasan");
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [rates, setRates] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("coolservice_salary_rates");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return {
+      gajiPokok: 3500000,
+      insentifCuci: 50000,
+      insentifPerbaikan: 100000,
+      tarifCuci: 75000,
+      tarifPerbaikan: 250000,
+    };
+  });
+
+  const [tempRates, setTempRates] = useState({
+    gajiPokok: "",
+    insentifCuci: "",
+    insentifPerbaikan: "",
+    tarifCuci: "",
+    tarifPerbaikan: "",
+  });
+
+  useEffect(() => {
+    if (showSettings) {
+      setTempRates({
+        gajiPokok: rates.gajiPokok.toString(),
+        insentifCuci: rates.insentifCuci.toString(),
+        insentifPerbaikan: rates.insentifPerbaikan.toString(),
+        tarifCuci: (rates.tarifCuci ?? 75000).toString(),
+        tarifPerbaikan: (rates.tarifPerbaikan ?? 250000).toString(),
+      });
+    }
+  }, [showSettings, rates]);
+
+  const handleSaveRates = (e: React.FormEvent) => {
+    e.preventDefault();
+    const g = Number(tempRates.gajiPokok);
+    const ic = Number(tempRates.insentifCuci);
+    const ip = Number(tempRates.insentifPerbaikan);
+    const tc = Number(tempRates.tarifCuci);
+    const tp = Number(tempRates.tarifPerbaikan);
+
+    if (isNaN(g) || g < 0 || isNaN(ic) || ic < 0 || isNaN(ip) || ip < 0 || isNaN(tc) || tc < 0 || isNaN(tp) || tp < 0) {
+      toast.error("Semua tarif harus berupa angka positif");
+      return;
+    }
+
+    const newRates = {
+      gajiPokok: g,
+      insentifCuci: ic,
+      insentifPerbaikan: ip,
+      tarifCuci: tc,
+      tarifPerbaikan: tp,
+    };
+
+    setRates(newRates);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("coolservice_salary_rates", JSON.stringify(newRates));
+    }
+    toast.success("Pengaturan tarif jasa & gaji berhasil disimpan!");
+    setShowSettings(false);
+  };
+
+  const handlePaySalary = async (t: { nama: string; total: number }) => {
+    const desc = `Pembayaran Gaji & Insentif ${t.nama} - Bulan ${selectedMonth}`;
+    const exists = pengeluaran.some((ex) => ex.keterangan === desc && ex.tanggal.startsWith(selectedMonth));
+    if (exists) {
+      toast.warning(`Gaji & Insentif untuk ${t.nama} pada bulan ini sudah pernah dicatat!`);
+      return;
+    }
+
+    await store.addPengeluaran({
+      kategori: "Gaji & Insentif",
+      jumlah: t.total,
+      tanggal: new Date().toISOString().slice(0, 10),
+      keterangan: desc,
+    });
+
+    toast.success(`Berhasil mencatat pembayaran gaji ${t.nama} sebesar ${rupiah(t.total)} ke Catatan Pengeluaran!`);
+  };
 
   // State for adding new manual operational expense
   const [formEx, setFormEx] = useState({
@@ -92,11 +181,11 @@ function KeuanganPage() {
   };
 
   const getIncentive = (keluhan: string) => {
-    return isCuci(keluhan) ? 50000 : 100000;
+    return isCuci(keluhan) ? rates.insentifCuci : rates.insentifPerbaikan;
   };
 
   const getOrderRevenue = (o: Orderan) => {
-    const serviceFee = isCuci(o.keluhan) ? 75000 : 250000;
+    const serviceFee = isCuci(o.keluhan) ? (rates.tarifCuci ?? 75000) : (rates.tarifPerbaikan ?? 250000);
     let partsFee = 0;
     if (o.spare_parts) {
       for (const p of o.spare_parts) {
@@ -132,7 +221,7 @@ function KeuanganPage() {
       const orders = dailyOrders.filter((o) => o.teknisi_id === t.id);
       const cuciCount = orders.filter((o) => isCuci(o.keluhan)).length;
       const perbaikanCount = orders.length - cuciCount;
-      const totalIncentive = (cuciCount * 50000) + (perbaikanCount * 100000);
+      const totalIncentive = (cuciCount * rates.insentifCuci) + (perbaikanCount * rates.insentifPerbaikan);
 
       return {
         ...t,
@@ -141,7 +230,7 @@ function KeuanganPage() {
         total: totalIncentive,
       };
     });
-  }, [teknisi, dailyOrders]);
+  }, [teknisi, dailyOrders, rates]);
 
   // 2. Calculations for Monthly Salary Recap (selectedMonth: e.g. "2026-06")
   const monthlyCompletedOrders = useMemo(() => {
@@ -149,19 +238,18 @@ function KeuanganPage() {
   }, [orderan, selectedMonth]);
 
   const monthlySalaryRecap = useMemo(() => {
-    const basicSalary = 3500000; // Rp 3.500.000 basic salary
     return teknisi.map((t) => {
       const orders = monthlyCompletedOrders.filter((o) => o.teknisi_id === t.id);
       const totalIncentive = orders.reduce((sum, o) => sum + getIncentive(o.keluhan), 0);
       return {
         id: t.id,
         nama: t.nama,
-        pokok: basicSalary,
+        pokok: rates.gajiPokok,
         insentif: totalIncentive,
-        total: basicSalary + totalIncentive,
+        total: rates.gajiPokok + totalIncentive,
       };
     });
-  }, [teknisi, monthlyCompletedOrders]);
+  }, [teknisi, monthlyCompletedOrders, rates]);
 
   // 3. Filtered list of expenses for the active month
   const monthlyExpensesList = useMemo(() => {
@@ -187,8 +275,17 @@ function KeuanganPage() {
       .filter((ex) => ex.kategori === "Lain-lain")
       .reduce((sum, ex) => sum + ex.jumlah, 0);
 
-    const manualExpenses = monthlyExpensesList.reduce((sum, ex) => sum + ex.jumlah, 0);
-    const totalExpenses = totalGajiTeknisi + sparePartsProcurement + manualExpenses;
+    const gajiKaryawanTercatat = monthlyExpensesList
+      .filter((ex) => ex.kategori === "Gaji & Insentif")
+      .reduce((sum, ex) => sum + ex.jumlah, 0);
+
+    const manualExpenses = monthlyExpensesList
+      .filter((ex) => ex.kategori !== "Gaji & Insentif")
+      .reduce((sum, ex) => sum + ex.jumlah, 0);
+
+    // If there is any logged salary payout, use it. Otherwise fall back to calculated estimate.
+    const gajiKaryawanYangDigunakan = gajiKaryawanTercatat > 0 ? gajiKaryawanTercatat : totalGajiTeknisi;
+    const totalExpenses = gajiKaryawanYangDigunakan + sparePartsProcurement + manualExpenses;
 
     // Monthly Revenue
     const totalRevenue = monthlyCompletedOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
@@ -198,13 +295,14 @@ function KeuanganPage() {
       expenses: totalExpenses,
       netProfit: totalRevenue - totalExpenses,
       gajiTeknisi: totalGajiTeknisi,
+      gajiKaryawanTercatat,
       sparePartsProcurement,
       transportBensin,
       sewaRuko,
       listrikInternet,
       lainLain,
     };
-  }, [monthlyCompletedOrders, monthlySalaryRecap, monthlyExpensesList]);
+  }, [monthlyCompletedOrders, monthlySalaryRecap, monthlyExpensesList, rates]);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -218,7 +316,7 @@ function KeuanganPage() {
             Rekap pengeluaran operasional, pendapatan, dan perhitungan insentif harian teknisi.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-end gap-3">
           <div className="flex flex-col">
             <Label className="text-xs text-muted-foreground mb-1">Pilih Bulan Rekap</Label>
             <Input 
@@ -228,6 +326,9 @@ function KeuanganPage() {
               className="w-44 h-9 text-xs"
             />
           </div>
+          <Button onClick={() => setShowSettings(true)} variant="outline" className="h-9 px-3.5 rounded-xl border-border bg-white/[0.02] hover:bg-white/[0.06] text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer text-foreground">
+            <Settings className="size-3.5" /> Pengaturan Jasa & Gaji
+          </Button>
         </div>
       </div>
 
@@ -370,8 +471,8 @@ function KeuanganPage() {
                     <thead>
                       <tr className="border-b border-border text-muted-foreground text-xs font-semibold">
                         <th className="pb-3">Nama Teknisi</th>
-                        <th className="pb-3 text-center">Cuci (Rp 50k)</th>
-                        <th className="pb-3 text-center">Perbaikan (Rp 100k)</th>
+                        <th className="pb-3 text-center">Cuci ({rates.insentifCuci >= 1000 ? `Rp ${rates.insentifCuci/1000}k` : rupiah(rates.insentifCuci)})</th>
+                        <th className="pb-3 text-center">Perbaikan ({rates.insentifPerbaikan >= 1000 ? `Rp ${rates.insentifPerbaikan/1000}k` : rupiah(rates.insentifPerbaikan)})</th>
                         <th className="pb-3 text-right">Total Insentif</th>
                       </tr>
                     </thead>
@@ -412,7 +513,7 @@ function KeuanganPage() {
                             </div>
                             <div className="text-right shrink-0">
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isWash ? "bg-primary/10 text-primary" : "bg-warning/15 text-warning-foreground"}`}>
-                                {isWash ? "Cuci (+50k)" : "Perbaikan (+100k)"}
+                                {isWash ? `Cuci (+${rates.insentifCuci >= 1000 ? `${rates.insentifCuci/1000}k` : rupiah(rates.insentifCuci)})` : `Perbaikan (+${rates.insentifPerbaikan >= 1000 ? `${rates.insentifPerbaikan/1000}k` : rupiah(rates.insentifPerbaikan)})`}
                               </span>
                               <p className="text-[10px] text-muted-foreground mt-1">Teknisi: {tek?.nama || "—"}</p>
                             </div>
@@ -444,6 +545,7 @@ function KeuanganPage() {
                       <th className="pb-3 text-right">Gaji Pokok</th>
                       <th className="pb-3 text-right">Insentif</th>
                       <th className="pb-3 text-right">Total Gaji</th>
+                      <th className="pb-3 text-center w-16">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -453,6 +555,14 @@ function KeuanganPage() {
                         <td className="py-3 text-right text-muted-foreground">{rupiah(t.pokok)}</td>
                         <td className="py-3 text-right text-primary font-medium">{rupiah(t.insentif)}</td>
                         <td className="py-3 text-right font-bold text-foreground">{rupiah(t.total)}</td>
+                        <td className="py-3 text-center">
+                          <button
+                            onClick={() => handlePaySalary(t)}
+                            className="px-2.5 py-1 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 text-[10px] font-bold transition-all cursor-pointer"
+                          >
+                            Bayar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -487,8 +597,12 @@ function KeuanganPage() {
                   </thead>
                   <tbody className="divide-y divide-border/60 text-xs">
                     <tr>
-                      <td className="py-2.5 font-medium text-foreground">Total Gaji Teknisi (Pokok + Insentif)</td>
-                      <td className="py-2.5 text-right font-semibold text-foreground">{rupiah(financials.gajiTeknisi)}</td>
+                      <td className="py-2.5 font-medium text-foreground">
+                        {financials.gajiKaryawanTercatat > 0 ? "Gaji & Insentif Karyawan (Terbayar)" : "Gaji & Insentif Karyawan (Estimasi)"}
+                      </td>
+                      <td className="py-2.5 text-right font-semibold text-foreground">
+                        {rupiah(financials.gajiKaryawanTercatat > 0 ? financials.gajiKaryawanTercatat : financials.gajiTeknisi)}
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-2.5 font-medium text-foreground">Pembelian / Restock Spare Part</td>
@@ -534,16 +648,21 @@ function KeuanganPage() {
               <form onSubmit={handleAddEx} className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Kategori Pengeluaran</Label>
-                  <select
+                  <Select
                     value={formEx.kategori}
-                    onChange={(e) => setFormEx((prev) => ({ ...prev, kategori: e.target.value }))}
-                    className="bg-white/[0.04] border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full cursor-pointer"
+                    onValueChange={(val) => setFormEx((prev) => ({ ...prev, kategori: val }))}
                   >
-                    <option value="Transport & Bensin" className="bg-[#14141b] text-foreground">Transport & Bensin</option>
-                    <option value="Sewa Kantor" className="bg-[#14141b] text-foreground">Sewa Kantor</option>
-                    <option value="Listrik & Internet" className="bg-[#14141b] text-foreground">Listrik, Air & Internet</option>
-                    <option value="Lain-lain" className="bg-[#14141b] text-foreground">Lain-lain (ATK, Konsumsi, dll)</option>
-                  </select>
+                    <SelectTrigger className="bg-white/[0.04] border-border text-foreground text-sm py-2.5 px-3.5 h-[42px] rounded-xl focus:ring-1 focus:ring-primary w-full text-left">
+                      <SelectValue placeholder="Pilih Kategori" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#14141b] border-white/10 text-white">
+                      <SelectItem value="Transport & Bensin">Transport & Bensin</SelectItem>
+                      <SelectItem value="Sewa Kantor">Sewa Kantor</SelectItem>
+                      <SelectItem value="Listrik & Internet">Listrik, Air & Internet</SelectItem>
+                      <SelectItem value="Gaji & Insentif">Gaji & Insentif Karyawan</SelectItem>
+                      <SelectItem value="Lain-lain">Lain-lain (ATK, Konsumsi, dll)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-1.5">
@@ -630,6 +749,8 @@ function KeuanganPage() {
                               ? "bg-purple-500/10 text-purple-500"
                               : ex.kategori === "Listrik & Internet"
                               ? "bg-cyan-500/10 text-cyan-500"
+                              : ex.kategori === "Gaji & Insentif"
+                              ? "bg-green-500/10 text-green-500"
                               : "bg-gray-500/10 text-gray-500"
                           }`}>
                             {ex.kategori}
@@ -666,6 +787,108 @@ function KeuanganPage() {
           </div>
         </div>
       )}
+
+      {/* Dialog Pengaturan Tarif Jasa & Gaji Karyawan */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-md bg-[#0f0f15] border border-white/5 text-white shadow-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Settings className="w-4 h-4 text-primary" />
+              Pengaturan Tarif & Gaji Karyawan
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSaveRates} className="space-y-4 py-2">
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Tarif Jasa Layanan (Pemasukan)</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-400">Jasa Cuci AC (Rp)</Label>
+                  <Input
+                    type="number"
+                    value={tempRates.tarifCuci}
+                    onChange={(e) => setTempRates((prev) => ({ ...prev, tarifCuci: e.target.value }))}
+                    placeholder="Contoh: 75000"
+                    className="bg-white/[0.04] border-white/10 text-white text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-400">Jasa Perbaikan (Rp)</Label>
+                  <Input
+                    type="number"
+                    value={tempRates.tarifPerbaikan}
+                    onChange={(e) => setTempRates((prev) => ({ ...prev, tarifPerbaikan: e.target.value }))}
+                    placeholder="Contoh: 250000"
+                    className="bg-white/[0.04] border-white/10 text-white text-sm"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-white/5 my-3 pt-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-success mb-3">Gaji & Insentif Karyawan (Pengeluaran)</h4>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-400">Gaji Pokok / Bulan (Rp)</Label>
+                  <Input
+                    type="number"
+                    value={tempRates.gajiPokok}
+                    onChange={(e) => setTempRates((prev) => ({ ...prev, gajiPokok: e.target.value }))}
+                    placeholder="Contoh: 3500000"
+                    className="bg-white/[0.04] border-white/10 text-white text-sm"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-gray-400">Insentif per Cuci (Rp)</Label>
+                    <Input
+                      type="number"
+                      value={tempRates.insentifCuci}
+                      onChange={(e) => setTempRates((prev) => ({ ...prev, insentifCuci: e.target.value }))}
+                      placeholder="Contoh: 50000"
+                      className="bg-white/[0.04] border-white/10 text-white text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-gray-400">Insentif per Perbaikan (Rp)</Label>
+                    <Input
+                      type="number"
+                      value={tempRates.insentifPerbaikan}
+                      onChange={(e) => setTempRates((prev) => ({ ...prev, insentifPerbaikan: e.target.value }))}
+                      placeholder="Contoh: 100000"
+                      className="bg-white/[0.04] border-white/10 text-white text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full sm:flex-1 text-xs border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+                onClick={() => setShowSettings(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="w-full sm:flex-1 text-xs bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold"
+              >
+                Simpan
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
