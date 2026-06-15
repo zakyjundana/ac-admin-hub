@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 // Trigger commit update for Lovable GitHub sync
 import { useState } from "react";
+import { useIsConfigured } from "@/hooks/useIsConfigured";
 import {
   Wrench,
   Eye,
@@ -34,11 +35,7 @@ export const Route = createFileRoute("/login")({
 });
 
 export default function LoginPage() {
-  console.log("Supabase config:", {
-    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-    VITE_SB_URL: import.meta.env.VITE_SB_URL,
-    isConfigured: isSupabaseConfigured()
-  });
+  const isConfigured = useIsConfigured();
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -175,8 +172,8 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Demo mode notice */}
-          {!isSupabaseConfigured() && (
+          {/* Demo mode notice — only shown after client mount to avoid hydration mismatch */}
+          {!isConfigured && (
             <div className="mb-6 flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>Mode demo aktif — klik Masuk untuk langsung ke dashboard.</span>

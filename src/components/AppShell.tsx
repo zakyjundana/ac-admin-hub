@@ -22,6 +22,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
+import { useIsConfigured } from "@/hooks/useIsConfigured";
 import { cn } from "@/lib/utils";
 import { signOut, isSupabaseConfigured } from "@/lib/auth";
 import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
@@ -61,6 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [selectedPlan, setSelectedPlan] = useState<"starter" | "pro" | null>(null);
   const { user } = useAuth();
   const demoMode = useStore((s) => s.demoMode);
+  const isConfigured = useIsConfigured();
 
   const getWhatsAppLink = (plan: "starter" | "pro") => {
     const planName = plan === "starter" ? "Starter Plan" : "Pro Plan";
@@ -80,7 +82,7 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
 
     return `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
   };
-  const displayUser = user || (!isSupabaseConfigured() ? {
+  const displayUser = user || (!isConfigured ? {
     id: "demo-user-id",
     email: "demo@coolservice.com",
     nama: "Budi Santoso",
@@ -178,7 +180,7 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
         </nav>
 
         {/* Demo Mode Toggle (Only for logged in users with Supabase configured) */}
-        {isSupabaseConfigured() && user && (
+        {isConfigured && user && (
           <div className="mx-2.5 my-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -506,7 +508,7 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
                 <strong>Mode Demo Aktif:</strong> Menampilkan data simulasi lengkap. Ini berguna untuk presentasi atau uji coba fitur.
               </span>
             </div>
-            {isSupabaseConfigured() && user && (
+            {isConfigured && user && (
               <button
                 onClick={() => {
                   store.setDemoMode(false);
