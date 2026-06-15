@@ -1,19 +1,20 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 // Detect Supabase URL from any possible environment variable name
-const supabaseUrl = 
-  process.env.SB_URL || 
-  process.env.VITE_SB_URL || 
-  process.env.VITE_SUPABASE_URL || 
-  process.env.SUPABASE_URL || 
+const supabaseUrl =
+  process.env.SB_URL ||
+  process.env.VITE_SB_URL ||
+  process.env.VITE_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
   "";
 
 // Detect Supabase Anon Key from any possible environment variable name
-const supabaseAnonKey = 
-  process.env.SB_ANON_KEY || 
-  process.env.VITE_SB_ANON_KEY || 
-  process.env.VITE_SUPABASE_ANON_KEY || 
-  process.env.SUPABASE_ANON_KEY || 
+const supabaseAnonKey =
+  process.env.SB_ANON_KEY ||
+  process.env.VITE_SB_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
   "";
 
 // Build defines object
@@ -37,5 +38,15 @@ export default defineConfig({
   },
   vite: {
     define: defineOverrides,
-  }
+    plugins: [
+      // Explicitly register TanStack Router plugin so Lovable's build server
+      // knows the exact routes directory path — fixes "Crawling result not available".
+      TanStackRouterVite({
+        routesDirectory: "./src/routes",
+        generatedRouteTree: "./src/routeTree.gen.ts",
+        quoteStyle: "double",
+        semicolons: false,
+      }),
+    ],
+  },
 });
