@@ -65,7 +65,7 @@ function ProfilPage() {
                   subscription_tier: plan,
                   subscription_status: "active",
                 }
-              }).then(({ error }) => {
+              }).then(({ error }: { error: any }) => {
                 if (error) {
                   toast.error("Gagal memperbarui paket langganan: " + error.message);
                 } else {
