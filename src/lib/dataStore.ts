@@ -225,9 +225,25 @@ export const store = {
       emit();
       if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
         try {
-          await supabase.from("ac_orderan").insert({ ...booking, user_id: currentUserId });
+          const { insertClientBooking } = await import("./api/config.functions");
+          await insertClientBooking({
+            data: {
+              shopId: currentUserId,
+              booking: {
+                nama_pelanggan: booking.nama_pelanggan,
+                no_wa: booking.no_wa,
+                alamat: booking.alamat,
+                wilayah: booking.wilayah,
+                keluhan: booking.keluhan,
+                status: booking.status,
+                teknisi_id: booking.teknisi_id,
+                tanggal: booking.tanggal,
+                jam: booking.jam,
+              }
+            }
+          });
         } catch (err) {
-          console.error("Error inserting booking:", err);
+          console.error("Error inserting booking via server function:", err);
         }
       }
     } else {
@@ -245,9 +261,25 @@ export const store = {
 
       if (isSupabaseConfigured()) {
         try {
-          await supabase.from("ac_orderan").insert({ ...booking, user_id: shopId });
+          const { insertClientBooking } = await import("./api/config.functions");
+          await insertClientBooking({
+            data: {
+              shopId,
+              booking: {
+                nama_pelanggan: booking.nama_pelanggan,
+                no_wa: booking.no_wa,
+                alamat: booking.alamat,
+                wilayah: booking.wilayah,
+                keluhan: booking.keluhan,
+                status: booking.status,
+                teknisi_id: booking.teknisi_id,
+                tanggal: booking.tanggal,
+                jam: booking.jam,
+              }
+            }
+          });
         } catch (err) {
-          console.error("Error inserting booking to other shop:", err);
+          console.error("Error inserting booking to other shop via server function:", err);
         }
       }
 

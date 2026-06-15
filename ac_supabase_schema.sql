@@ -107,8 +107,6 @@ CREATE POLICY "Manage own orderan" ON public.ac_orderan
 
 -- Allow public anonymous clients (online booking customer page) to insert orderans
 DROP POLICY IF EXISTS "Allow public booking insert" ON public.ac_orderan;
-CREATE POLICY "Allow public booking insert" ON public.ac_orderan 
-    FOR INSERT WITH CHECK (true);
 
 -- 4. Policies for ac_riwayat
 DROP POLICY IF EXISTS "Manage own riwayat" ON public.ac_riwayat;
