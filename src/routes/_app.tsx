@@ -14,9 +14,25 @@ export const Route = createFileRoute("/_app")({
       const res = await checkServerSession();
       isAuthenticated = res.isAuthenticated;
     } else {
-      // Client-side cookie check
+      // Client-side: first try the fast cookie check
       const cookie = document.cookie || "";
-      isAuthenticated = cookie.includes("sb-session=active");
+      if (cookie.includes("sb-session=active")) {
+        isAuthenticated = true;
+      } else {
+        // Cookie missing (e.g., first navigation after login before useAuth
+        // has set the cookie via useEffect). Fall back to asking Supabase directly.
+        try {
+          const { supabase } = await import("@/lib/supabase");
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            isAuthenticated = true;
+            // Eagerly set the cookie so future navigations are instant
+            document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
+          }
+        } catch {
+          isAuthenticated = false;
+        }
+      }
     }
 
     if (!isAuthenticated) {

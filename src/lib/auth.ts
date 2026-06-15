@@ -42,6 +42,13 @@ export async function signIn(email: string, password: string) {
     password,
   });
   if (error) throw error;
+  // Set session cookie IMMEDIATELY so that _app.tsx beforeLoad can detect
+  // authentication on the next full-page navigation (window.location.href).
+  // Without this, the cookie is only set by useAuth's useEffect which runs
+  // AFTER React mounts — too late for the beforeLoad guard.
+  if (data.session && typeof document !== "undefined") {
+    document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
+  }
   // Auto-disable demo mode for verified users upon login
   if (data.user?.id && typeof window !== "undefined") {
     localStorage.setItem("coolservice_demo_mode_" + data.user.id, "false");

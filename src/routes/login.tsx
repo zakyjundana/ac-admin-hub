@@ -53,7 +53,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      if (isSupabaseConfigured()) {
+      if (isConfigured) {
         await signIn(form.email, form.password);
         window.location.href = "/dashboard";
       } else {
@@ -75,7 +75,7 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    if (!isSupabaseConfigured()) {
+    if (!isConfigured) {
       toast.error("Supabase belum dikonfigurasi.");
       return;
     }
