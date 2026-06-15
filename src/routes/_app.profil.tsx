@@ -56,35 +56,19 @@ function ProfilPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("payment") === "success") {
-        const plan = params.get("plan");
-        if (plan) {
-          if (isSupabaseConfigured() && user) {
-            import("@/lib/supabase").then(({ supabase }) => {
-              supabase.auth.updateUser({
-                data: {
-                  subscription_tier: plan,
-                  subscription_status: "active",
-                }
-              }).then(({ error }: { error: any }) => {
-                if (error) {
-                  toast.error("Gagal memperbarui paket langganan: " + error.message);
-                } else {
-                  toast.success(`Selamat! Akun Anda berhasil di-upgrade ke paket ${plan.toUpperCase()}`);
-                  setTimeout(() => {
-                    window.location.href = "/profil";
-                  }, 2000);
-                }
-              });
-            }).catch((err) => {
-              console.error("Failed to load supabase module:", err);
-            });
-          } else {
-            // Demo/mock mode simulation
-            toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
-            setTimeout(() => {
-              window.location.href = "/profil";
-            }, 2000);
-          }
+        const plan = params.get("plan") || "starter";
+        if (!isSupabaseConfigured()) {
+          // Demo/mock mode simulation
+          toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
+          setTimeout(() => {
+            window.location.href = "/profil";
+          }, 2000);
+        } else {
+          // Secure mode: do NOT upgrade client-side. The upgrade is handled securely on the server via webhook.
+          toast.success(`Pembayaran sukses! Transaksi Anda sedang diproses. Silakan tunggu beberapa saat.`);
+          setTimeout(() => {
+            window.location.href = "/profil";
+          }, 3000);
         }
       } else if (params.get("payment") === "cancel") {
         toast.error("Pembayaran dibatalkan.");

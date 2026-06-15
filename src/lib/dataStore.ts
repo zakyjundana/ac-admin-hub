@@ -7,11 +7,13 @@ import {
   initialSparePart,
   initialRiwayat,
   initialFeedback,
+  initialPengeluaran,
   type Orderan,
   type Teknisi,
   type SparePart,
   type RiwayatKerusakan,
   type Feedback,
+  type Pengeluaran,
 } from "./mockData";
 
 // Simple in-memory store backed by Supabase & LocalStorage cache.
@@ -21,6 +23,7 @@ type State = {
   sparepart: SparePart[];
   riwayat: RiwayatKerusakan[];
   feedback: Feedback[];
+  pengeluaran: Pengeluaran[];
   demoMode: boolean;
 };
 
@@ -30,6 +33,7 @@ let state: State = {
   sparepart: initialSparePart,
   riwayat: initialRiwayat,
   feedback: initialFeedback,
+  pengeluaran: initialPengeluaran,
   demoMode: true,
 };
 
@@ -83,6 +87,7 @@ export const store = {
         sparepart: initialSparePart,
         riwayat: initialRiwayat,
         feedback: initialFeedback,
+        pengeluaran: initialPengeluaran,
         demoMode: true,
       };
       emit();
@@ -91,6 +96,7 @@ export const store = {
       let loadedFromDb = false;
       if (isSupabaseConfigured() && userId) {
         try {
+          // Fetch existing tables
           const [
             { data: dbTeknisi, error: errTeknisi },
             { data: dbOrderan, error: errOrderan },
@@ -105,6 +111,17 @@ export const store = {
             supabase.from("ac_feedback").select("*").eq("user_id", userId),
           ]);
 
+          // Fetch ac_pengeluaran with graceful error handling
+          let dbPengeluaran: any[] = [];
+          try {
+            const { data, error } = await supabase.from("ac_pengeluaran").select("*").eq("user_id", userId);
+            if (!error && data) {
+              dbPengeluaran = data;
+            }
+          } catch (e) {
+            console.warn("Could not load ac_pengeluaran table from Supabase. It might not be migrated yet:", e);
+          }
+
           if (!errTeknisi && !errOrderan && !errSparepart && !errRiwayat && !errFeedback) {
             state = {
               teknisi: dbTeknisi || [],
@@ -112,6 +129,7 @@ export const store = {
               sparepart: dbSparepart || [],
               riwayat: dbRiwayat || [],
               feedback: dbFeedback || [],
+              pengeluaran: dbPengeluaran || [],
               demoMode: false,
             };
             loadedFromDb = true;
@@ -135,6 +153,7 @@ export const store = {
               sparepart: parsed.sparepart || [],
               riwayat: parsed.riwayat || [],
               feedback: parsed.feedback || [],
+              pengeluaran: parsed.pengeluaran || [],
               demoMode: false,
             };
           } catch {
@@ -144,6 +163,7 @@ export const store = {
               sparepart: [],
               riwayat: [],
               feedback: [],
+              pengeluaran: [],
               demoMode: false,
             };
           }
@@ -154,6 +174,7 @@ export const store = {
             sparepart: [],
             riwayat: [],
             feedback: [],
+            pengeluaran: [],
             demoMode: false,
           };
         }
@@ -174,6 +195,7 @@ export const store = {
           sparepart: state.sparepart,
           riwayat: state.riwayat,
           feedback: state.feedback,
+          pengeluaran: state.pengeluaran,
         })
       );
     }
@@ -464,6 +486,51 @@ export const store = {
         await supabase.from("ac_feedback").delete().eq("id", id).eq("user_id", currentUserId);
       } catch (err) {
         console.error("Failed to delete feedback from Supabase:", err);
+      }
+    }
+  },
+  // ---- Pengeluaran
+  addPengeluaran: async (ex: Omit<Pengeluaran, "id">) => {
+    const id = `ex${Date.now()}`;
+    const newEx = { ...ex, id };
+    state = { ...state, pengeluaran: [...state.pengeluaran, newEx] };
+    store.saveState();
+    emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_pengeluaran").insert({ ...newEx, user_id: currentUserId });
+      } catch (err) {
+        console.error("Failed to insert pengeluaran to Supabase:", err);
+      }
+    }
+  },
+  deletePengeluaran: async (id: string) => {
+    state = { ...state, pengeluaran: state.pengeluaran.filter((ex) => ex.id !== id) };
+    store.saveState();
+    emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_pengeluaran").delete().eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to delete pengeluaran from Supabase:", err);
+      }
+    }
+  },
+  updatePengeluaran: async (id: string, patch: Partial<Pengeluaran>) => {
+    state = {
+      ...state,
+      pengeluaran: state.pengeluaran.map((ex) => (ex.id === id ? { ...ex, ...patch } : ex)),
+    };
+    store.saveState();
+    emit();
+
+    if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
+      try {
+        await supabase.from("ac_pengeluaran").update(patch).eq("id", id).eq("user_id", currentUserId);
+      } catch (err) {
+        console.error("Failed to update pengeluaran in Supabase:", err);
       }
     }
   },

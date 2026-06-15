@@ -49,6 +49,9 @@ export function useAuth(): AuthState {
         const { data } = await supabase.auth.getSession();
         const u = data.session?.user ?? null;
         store.syncUser(u?.id ?? null);
+        if (typeof document !== "undefined") {
+          document.cookie = `sb-session=${data.session ? "active" : ""}; path=/; max-age=${data.session ? 3600 * 24 * 7 : 0}; SameSite=Lax`;
+        }
         if (active) {
           setState({
             loading: false,
@@ -74,6 +77,9 @@ export function useAuth(): AuthState {
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         const u = session?.user ?? null;
         store.syncUser(u?.id ?? null);
+        if (typeof document !== "undefined") {
+          document.cookie = `sb-session=${session ? "active" : ""}; path=/; max-age=${session ? 3600 * 24 * 7 : 0}; SameSite=Lax`;
+        }
         if (active) {
           setState({
             loading: false,

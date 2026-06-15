@@ -15,15 +15,24 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { isSupabaseConfigured, getSession } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/auth";
 import { store } from "@/lib/dataStore";
+import { checkServerSession } from "@/lib/api/config.functions";
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
     if (!isSupabaseConfigured()) return;
-    const session = await getSession();
-    if (!session) {
+
+    let isAuthenticated = false;
+    if (typeof window === "undefined") {
+      const res = await checkServerSession();
+      isAuthenticated = res.isAuthenticated;
+    } else {
+      const cookie = document.cookie || "";
+      isAuthenticated = cookie.includes("sb-session=active");
+    }
+
+    if (!isAuthenticated) {
       throw redirect({ to: "/login" });
     }
   },

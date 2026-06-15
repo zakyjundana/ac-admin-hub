@@ -1,25 +1,35 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { ShellRoute } from "@/components/AppShell";
-import { isSupabaseConfigured, getSession } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/auth";
+import { checkServerSession } from "@/lib/api/config.functions";
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
-    // IMPORTANT: Only run auth check on client side.
-    // During SSR (Cloudflare Workers), localStorage does not exist.
-    // Redirecting on the server would also break client hydration.
-    if (typeof window === "undefined") return;
-
     // If Supabase is not configured (demo mode), skip auth guard
     if (!isSupabaseConfigured()) return;
 
-    const session = await getSession();
-    if (!session) {
+    let isAuthenticated = false;
+    if (typeof window === "undefined") {
+      // Server-side (SSR) cookie check using server function
+      const res = await checkServerSession();
+      isAuthenticated = res.isAuthenticated;
+    } else {
+      // Client-side cookie check
+      const cookie = document.cookie || "";
+      isAuthenticated = cookie.includes("sb-session=active");
+    }
+
+    if (!isAuthenticated) {
       throw redirect({ to: "/login" });
     }
 
-    // Redirect to onboarding if the user has not completed onboarding
-    if (session.user && !session.user.user_metadata?.onboarding_done) {
-      throw redirect({ to: "/onboarding" });
+    // Redirect to onboarding on client if the user has not completed onboarding
+    if (typeof window !== "undefined") {
+      const { getSession } = await import("@/lib/auth");
+      const session = await getSession();
+      if (session?.user && !session.user.user_metadata?.onboarding_done) {
+        throw redirect({ to: "/onboarding" });
+      }
     }
   },
   component: ShellRoute,

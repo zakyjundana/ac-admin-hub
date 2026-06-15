@@ -79,11 +79,58 @@ CREATE TABLE IF NOT EXISTS public.ac_feedback (
 );
 CREATE INDEX IF NOT EXISTS idx_ac_feedback_user ON public.ac_feedback(user_id);
 
--- RLS (Row Level Security) - Opsional
--- Untuk kemudahan awal demo, Anda bisa mengaktifkan atau menonaktifkan RLS.
--- Berikut adalah perintah untuk menonaktifkan RLS agar dapat dibaca/tulis secara publik (Anon Key):
-ALTER TABLE public.ac_teknisi DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ac_spareparts DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ac_orderan DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ac_riwayat DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ac_feedback DISABLE ROW LEVEL SECURITY;
+-- RLS (Row Level Security) - Security Hardened
+-- Enable RLS on all business data tables
+ALTER TABLE public.ac_teknisi ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ac_spareparts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ac_orderan ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ac_riwayat ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ac_feedback ENABLE ROW LEVEL SECURITY;
+
+-- 1. Policies for ac_teknisi
+CREATE POLICY "Manage own teknisi" ON public.ac_teknisi 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+
+-- 2. Policies for ac_spareparts
+CREATE POLICY "Manage own spareparts" ON public.ac_spareparts 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+
+-- 3. Policies for ac_orderan
+CREATE POLICY "Manage own orderan" ON public.ac_orderan 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+
+-- Allow public anonymous clients (online booking customer page) to insert orderans
+CREATE POLICY "Allow public booking insert" ON public.ac_orderan 
+    FOR INSERT WITH CHECK (true);
+
+-- 4. Policies for ac_riwayat
+CREATE POLICY "Manage own riwayat" ON public.ac_riwayat 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+
+-- 5. Policies for ac_feedback
+CREATE POLICY "Manage own feedback" ON public.ac_feedback 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+
+-- 6. Tabel Pengeluaran Operasional (ac_pengeluaran)
+CREATE TABLE IF NOT EXISTS public.ac_pengeluaran (
+    id TEXT PRIMARY KEY DEFAULT 'ex' || md5(random()::text || clock_timestamp()::text),
+    user_id TEXT NOT NULL,
+    kategori TEXT NOT NULL, -- 'Transport & Bensin', 'Sewa Kantor', 'Listrik & Internet', 'Lain-lain'
+    jumlah NUMERIC NOT NULL DEFAULT 0,
+    tanggal DATE NOT NULL DEFAULT CURRENT_DATE,
+    keterangan TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ac_pengeluaran_user ON public.ac_pengeluaran(user_id);
+
+ALTER TABLE public.ac_pengeluaran ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Manage own pengeluaran" ON public.ac_pengeluaran 
+    FOR ALL USING (auth.uid()::text = user_id) 
+    WITH CHECK (auth.uid()::text = user_id);
+

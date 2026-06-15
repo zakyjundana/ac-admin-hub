@@ -301,3 +301,51 @@ export const dataKeuanganHistoris: BulananFinansial[] = [
   { bulan: "Mei", pemasukan: 17200000, pengeluaran: 10400000, keuntungan: 6800000 }
 ];
 
+export interface Pengeluaran {
+  id: string;
+  user_id?: string;
+  kategori: string;
+  jumlah: number;
+  tanggal: string;
+  keterangan: string;
+}
+
+export const initialPengeluaran: Pengeluaran[] = [
+  {
+    id: "ex1",
+    kategori: "Sewa Kantor",
+    jumlah: 4000000,
+    tanggal: "2026-06-02",
+    keterangan: "Sewa Ruko Bulanan Cabang Utama"
+  },
+  {
+    id: "ex2",
+    kategori: "Transport & Bensin",
+    jumlah: 500000,
+    tanggal: "2026-06-05",
+    keterangan: "Bensin operasional teknisi minggu ke-1"
+  },
+  {
+    id: "ex3",
+    kategori: "Listrik & Internet",
+    jumlah: 850000,
+    tanggal: "2026-06-10",
+    keterangan: "Tagihan PLN kantor & Wifi Indihome"
+  },
+  {
+    id: "ex4",
+    kategori: "Transport & Bensin",
+    jumlah: 600000,
+    tanggal: "2026-06-12",
+    keterangan: "Bensin operasional teknisi minggu ke-2"
+  },
+  {
+    id: "ex5",
+    kategori: "Lain-lain",
+    jumlah: 250000,
+    tanggal: "2026-06-15",
+    keterangan: "Beli Kertas Printer & ATK Kantor"
+  }
+];
+
+
