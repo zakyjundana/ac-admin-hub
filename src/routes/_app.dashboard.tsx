@@ -404,11 +404,11 @@ function DashboardPage() {
               </Button>
             </div>
           </div>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="w-full sm:flex-1 text-xs border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+              className="w-full sm:flex-1 text-xs border border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
               onClick={() => setShowShare(false)}
             >
               Tutup
@@ -424,7 +424,7 @@ function DashboardPage() {
             >
               <Send className="size-3.5" /> Kirim via WA
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

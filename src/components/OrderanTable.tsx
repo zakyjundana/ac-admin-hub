@@ -234,11 +234,11 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
               className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/60 focus:bg-white/[0.06] transition-all resize-none leading-relaxed"
             />
           </div>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-2">
+          <div className="flex flex-col sm:flex-row gap-2 mt-2 pt-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+              className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 border border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
               onClick={() => {
                 navigator.clipboard.writeText(pesanShare);
                 toast.success("Pesan berhasil disalin ke clipboard!");
@@ -249,9 +249,9 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
             
             {typeof navigator !== "undefined" && navigator.share && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+                className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 border border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
                 onClick={() => {
                   navigator.share({
                     text: pesanShare
@@ -279,7 +279,7 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
             >
               <Send className="size-3.5" /> Kirim WA
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

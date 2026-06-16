@@ -868,12 +868,12 @@ function KeuanganPage() {
               </div>
             </div>
 
-            <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 mt-6 pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="w-full sm:flex-1 text-xs border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+                className="w-full sm:flex-1 text-xs border border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
                 onClick={() => setShowSettings(false)}
               >
                 Batal
@@ -885,7 +885,7 @@ function KeuanganPage() {
               >
                 Simpan
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
