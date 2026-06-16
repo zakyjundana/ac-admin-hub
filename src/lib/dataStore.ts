@@ -38,6 +38,7 @@ let state: State = {
 };
 
 let currentUserId: string | null = null;
+let realtimeChannel: any = null;
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((l) => l());
@@ -180,6 +181,49 @@ export const store = {
         }
       }
       emit();
+    }
+
+    // Set up realtime channel subscription for automatic order updates
+    if (typeof window !== "undefined") {
+      if (realtimeChannel) {
+        try {
+          supabase.removeChannel(realtimeChannel);
+        } catch (err) {
+          console.warn("Error removing realtime channel:", err);
+        }
+        realtimeChannel = null;
+      }
+
+      if (!isDemo && isSupabaseConfigured() && userId) {
+        realtimeChannel = supabase
+          .channel(`realtime-orders-${userId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "ac_orderan",
+              filter: `user_id=eq.${userId}`,
+            },
+            async (payload) => {
+              console.log("[Realtime] Orderan changed:", payload);
+              try {
+                const { data: dbOrderan, error: errOrderan } = await supabase
+                  .from("ac_orderan")
+                  .select("*")
+                  .eq("user_id", userId);
+                if (!errOrderan && dbOrderan) {
+                  state = { ...state, orderan: dbOrderan };
+                  store.saveState();
+                  emit();
+                }
+              } catch (err) {
+                console.error("[Realtime] Failed to fetch updated orderan:", err);
+              }
+            }
+          )
+          .subscribe();
+      }
     }
   },
 
