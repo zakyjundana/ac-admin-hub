@@ -47,6 +47,7 @@ const nav = [
 
 async function handleLogout() {
   try {
+    pendo.clearSession();
     if (isSupabaseConfigured()) await signOut();
     window.location.href = "/login";
   } catch {

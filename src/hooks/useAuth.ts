@@ -53,6 +53,18 @@ export function useAuth(): AuthState {
           document.cookie = `sb-session=${data.session ? "active" : ""}; path=/; max-age=${data.session ? 3600 * 24 * 7 : 0}; SameSite=Lax`;
         }
         if (active) {
+          if (u) {
+            pendo.identify({
+              visitor: {
+                id: u.id,
+                email: u.email,
+                full_name: u.user_metadata?.nama,
+                nama_bisnis: u.user_metadata?.nama_bisnis,
+                subscription_tier: u.user_metadata?.subscription_tier || "free",
+                subscription_status: u.user_metadata?.subscription_status || "active",
+              },
+            });
+          }
           setState({
             loading: false,
             user: u
@@ -81,6 +93,18 @@ export function useAuth(): AuthState {
           document.cookie = `sb-session=${session ? "active" : ""}; path=/; max-age=${session ? 3600 * 24 * 7 : 0}; SameSite=Lax`;
         }
         if (active) {
+          if (u) {
+            pendo.identify({
+              visitor: {
+                id: u.id,
+                email: u.email,
+                full_name: u.user_metadata?.nama,
+                nama_bisnis: u.user_metadata?.nama_bisnis,
+                subscription_tier: u.user_metadata?.subscription_tier || "free",
+                subscription_status: u.user_metadata?.subscription_status || "active",
+              },
+            });
+          }
           setState({
             loading: false,
             user: u
