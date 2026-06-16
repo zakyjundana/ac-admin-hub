@@ -54,9 +54,27 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
     }
     if (editing) {
       store.updateOrderan(editing.id, form);
+      if (typeof pendo !== "undefined") {
+        pendo.track("order_updated", {
+          order_id: editing.id,
+          wilayah: form.wilayah,
+          has_technician_assigned: !!form.teknisi_id,
+          has_spare_parts: (form.spare_parts?.length ?? 0) > 0,
+          status: form.status,
+        });
+      }
       toast.success("Orderan berhasil diperbarui");
     } else {
       store.addOrderan(form);
+      if (typeof pendo !== "undefined") {
+        pendo.track("order_created", {
+          wilayah: form.wilayah,
+          has_technician_assigned: !!form.teknisi_id,
+          has_spare_parts: (form.spare_parts?.length ?? 0) > 0,
+          status: form.status,
+          keluhan_type: form.keluhan?.toLowerCase().includes("cuci") ? "cuci" : "perbaikan",
+        });
+      }
       toast.success("Orderan baru ditambahkan");
     }
     onOpenChange(false);

@@ -136,6 +136,14 @@ export default function OnboardingPage() {
       }
 
       // Mode demo atau sukses → ke dashboard
+      if (typeof pendo !== "undefined") {
+        pendo.track("onboarding_completed", {
+          business_name: bisnis.nama,
+          city: bisnis.kota,
+          technician_count: teknisiList.filter((t) => t.nama && t.noHp && t.wilayah).length,
+          is_supabase_configured: isSupabaseConfigured(),
+        });
+      }
       setStep(3);
     } catch (err) {
       console.error("Onboarding error:", err);

@@ -56,11 +56,23 @@ function ProfilPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("payment") === "success") {
+        if (typeof pendo !== "undefined") {
+          pendo.track("payment_completed", {
+            payment_status: "success",
+            plan_name: params.get("plan") || "unknown",
+          });
+        }
         toast.success("Pembayaran sukses! Transaksi Anda sedang diproses. Silakan tunggu beberapa saat.");
         setTimeout(() => {
           window.history.replaceState({}, document.title, window.location.pathname);
         }, 3000);
       } else if (params.get("payment") === "cancel") {
+        if (typeof pendo !== "undefined") {
+          pendo.track("payment_completed", {
+            payment_status: "cancel",
+            plan_name: params.get("plan") || "unknown",
+          });
+        }
         toast.error("Pembayaran dibatalkan.");
         setTimeout(() => {
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -83,6 +95,13 @@ function ProfilPage() {
         namaBisnis: form.namaBisnis,
         noHp: form.noHp,
       });
+      if (typeof pendo !== "undefined") {
+        pendo.track("business_profile_updated", {
+          has_name_changed: form.nama !== (user?.nama || ""),
+          has_business_name_changed: form.namaBisnis !== (user?.namaBisnis || ""),
+          has_phone_changed: form.noHp !== (user?.noHp || ""),
+        });
+      }
       toast.success("Profil bisnis berhasil diperbarui!");
       // Reload page to refresh auth state
       setTimeout(() => {
@@ -119,6 +138,14 @@ function ProfilPage() {
       return;
     }
     setLoadingUpgrade(plan);
+    if (typeof pendo !== "undefined") {
+      pendo.track("subscription_upgrade_initiated", {
+        plan_name: plan,
+        plan_price: plan === "starter" ? 99000 : 199000,
+        current_plan: user?.subscriptionTier || "free",
+        is_demo_mode: !isSupabaseConfigured(),
+      });
+    }
     try {
       if (!isSupabaseConfigured()) {
         // Mode demo: langsung upgrade di localStorage & reload secara lokal

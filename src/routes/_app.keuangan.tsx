@@ -110,6 +110,15 @@ function KeuanganPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("coolservice_salary_rates", JSON.stringify(newRates));
     }
+    if (typeof pendo !== "undefined") {
+      pendo.track("salary_rates_updated", {
+        tarif_cuci: tc,
+        tarif_perbaikan: tp,
+        gaji_pokok: g,
+        insentif_cuci: ic,
+        insentif_perbaikan: ip,
+      });
+    }
     toast.success("Pengaturan tarif jasa & gaji berhasil disimpan!");
     setShowSettings(false);
   };
@@ -128,6 +137,16 @@ function KeuanganPage() {
       tanggal: new Date().toISOString().slice(0, 10),
       keterangan: desc,
     });
+
+    if (typeof pendo !== "undefined") {
+      pendo.track("salary_payment_recorded", {
+        technician_name: t.nama,
+        total_amount: t.total,
+        month: selectedMonth,
+        base_salary: rates.gajiPokok,
+        incentive_amount: t.total - rates.gajiPokok,
+      });
+    }
 
     toast.success(`Berhasil mencatat pembayaran gaji ${t.nama} sebesar ${rupiah(t.total)} ke Catatan Pengeluaran!`);
   };
@@ -158,6 +177,15 @@ function KeuanganPage() {
       keterangan: formEx.keterangan,
     });
 
+    if (typeof pendo !== "undefined") {
+      pendo.track("expense_recorded", {
+        kategori: formEx.kategori,
+        jumlah: Number(formEx.jumlah),
+        tanggal: formEx.tanggal,
+        keterangan: formEx.keterangan.substring(0, 100),
+      });
+    }
+
     toast.success("Catatan pengeluaran berhasil ditambahkan!");
     setFormEx({
       kategori: "Transport & Bensin",
@@ -169,6 +197,14 @@ function KeuanganPage() {
 
   const handleDeleteEx = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus catatan pengeluaran ini?")) {
+      const ex = pengeluaran.find((e) => e.id === id);
+      if (typeof pendo !== "undefined" && ex) {
+        pendo.track("expense_deleted", {
+          expense_id: id,
+          kategori: ex.kategori,
+          jumlah: ex.jumlah,
+        });
+      }
       await store.deletePengeluaran(id);
       toast.success("Catatan pengeluaran berhasil dihapus");
     }

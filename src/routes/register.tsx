@@ -81,10 +81,24 @@ export default function RegisterPage() {
         
         if (data?.session) {
           setSuccess(true);
+          if (typeof pendo !== "undefined") {
+            pendo.track("account_registered", {
+              registration_method: "email",
+              has_session: true,
+              needs_verification: false,
+            });
+          }
           // Lanjut onboarding setelah 1.5 detik
           setTimeout(() => (window.location.href = "/onboarding"), 1500);
         } else {
           // Email confirmation is enabled in Supabase
+          if (typeof pendo !== "undefined") {
+            pendo.track("account_registered", {
+              registration_method: "email",
+              has_session: false,
+              needs_verification: true,
+            });
+          }
           setNeedVerification(true);
         }
       } else {
@@ -113,6 +127,12 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
+      if (typeof pendo !== "undefined") {
+        pendo.track("google_signup_initiated", {
+          provider: "google",
+          redirect_to: "/dashboard",
+        });
+      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
