@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   format, 
   startOfMonth, 
@@ -58,10 +58,15 @@ export const Route = createFileRoute("/book")({
 function BookingPage() {
   const { shop } = Route.useSearch();
   const orderan = useStore((s) => s.orderan); // To trigger reactivity
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Load shop specific orders dynamically (protecting privacy)
   const shopOrders = useMemo(() => {
-    if (typeof window === "undefined") return [];
+    if (!isClient) return [];
     if (shop === "demo-user-id") {
       const saved = localStorage.getItem("coolservice_store_demo-user-id");
       if (saved) {
@@ -76,16 +81,16 @@ function BookingPage() {
       } catch {}
     }
     return [];
-  }, [shop, orderan]);
+  }, [shop, orderan, isClient]);
 
   // Load shop business name
   const namaBisnis = useMemo(() => {
-    if (typeof window === "undefined") return "CoolService";
+    if (!isClient) return "CoolService";
     if (shop === "demo-user-id") return "CoolService Mandiri";
     const saved = localStorage.getItem("coolservice_store_" + shop);
     // Try to get from auth or fallback
     return "CoolService AC";
-  }, [shop]);
+  }, [shop, isClient]);
 
   // Calendar States
   const [currentMonth, setCurrentMonth] = useState(new Date());

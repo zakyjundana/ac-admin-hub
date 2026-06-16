@@ -47,23 +47,24 @@ function KeuanganPage() {
   const [activeTab, setActiveTab] = useState<"ringkasan" | "catatan">("ringkasan");
 
   const [showSettings, setShowSettings] = useState(false);
-  const [rates, setRates] = useState(() => {
+  const [rates, setRates] = useState({
+    gajiPokok: 3500000,
+    insentifCuci: 50000,
+    insentifPerbaikan: 100000,
+    tarifCuci: 75000,
+    tarifPerbaikan: 250000,
+  });
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("coolservice_salary_rates");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          setRates(JSON.parse(saved));
         } catch {}
       }
     }
-    return {
-      gajiPokok: 3500000,
-      insentifCuci: 50000,
-      insentifPerbaikan: 100000,
-      tarifCuci: 75000,
-      tarifPerbaikan: 250000,
-    };
-  });
+  }, []);
 
   const [tempRates, setTempRates] = useState({
     gajiPokok: "",

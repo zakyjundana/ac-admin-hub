@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { Plus, Filter, CalendarDays, Users, ClipboardList, CheckCircle2, Share2, Copy, Send } from "lucide-react";
@@ -30,6 +30,13 @@ function JadwalPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Orderan | null>(null);
   const [filterWilayah, setFilterWilayah] = useState<string>("all");
+  const [bookingUrl, setBookingUrl] = useState("https://coolboard.lovable.app/book?shop=demo-user-id");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setBookingUrl(`${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`);
+    }
+  }, [user]);
 
   const selectedKey = format(selectedDate, "yyyy-MM-dd");
   const todayOrders = useMemo(
@@ -148,19 +155,14 @@ function JadwalPage() {
             
             <div className="bg-white/[0.04] border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2">
               <span className="text-xs text-primary truncate select-all">
-                {typeof window !== "undefined" 
-                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`}
+                {bookingUrl}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 text-gray-400 hover:text-white shrink-0"
                 onClick={() => {
-                  const url = typeof window !== "undefined" 
-                    ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                    : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
-                  navigator.clipboard.writeText(url);
+                  navigator.clipboard.writeText(bookingUrl);
                   toast.success("Link berhasil disalin!");
                 }}
               >
@@ -181,10 +183,7 @@ function JadwalPage() {
               size="sm"
               className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold"
               onClick={() => {
-                const url = typeof window !== "undefined" 
-                  ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
-                  : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
-                const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${url}`;
+                const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${bookingUrl}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
                 setShowShare(false);
               }}
