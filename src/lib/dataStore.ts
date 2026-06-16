@@ -336,6 +336,15 @@ export const store = {
           biaya: 0,
         };
         state = { ...state, riwayat: [...state.riwayat, r] };
+        if (typeof pendo !== "undefined") {
+          pendo.track("order_completed_with_history", {
+            order_id: id,
+            jenis_kerusakan: prev.keluhan,
+            technician_id: prev.teknisi_id || "",
+            garansi_hari: prev.garansi_hari ?? 30,
+            spare_parts_used_count: partsToReduce?.length ?? 0,
+          });
+        }
         if (isSupabaseConfigured() && currentUserId && !state.demoMode) {
           const { error } = await supabase.from("ac_riwayat").insert({ ...r, user_id: currentUserId });
           if (error) {

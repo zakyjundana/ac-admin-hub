@@ -28,6 +28,13 @@ function TeknisiPage() {
       return;
     }
     store.addTeknisi(form);
+    if (typeof pendo !== "undefined") {
+      pendo.track("technician_added", {
+        technician_name: form.nama,
+        wilayah: form.wilayah,
+        total_technicians_after: teknisi.length + 1,
+      });
+    }
     setForm({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0] });
     setOpen(false);
     toast.success("Teknisi ditambahkan");
@@ -66,6 +73,17 @@ function TeknisiPage() {
                   size="icon"
                   className="size-8 text-muted-foreground hover:text-destructive"
                   onClick={() => {
+                    const aktifCount = orderan.filter((o) => o.teknisi_id === t.id && o.status !== "Selesai").length;
+                    const totalCount = orderan.filter((o) => o.teknisi_id === t.id).length;
+                    if (typeof pendo !== "undefined") {
+                      pendo.track("technician_deleted", {
+                        technician_id: t.id,
+                        technician_name: t.nama,
+                        wilayah: t.wilayah,
+                        active_orders_count: aktifCount,
+                        total_orders_count: totalCount,
+                      });
+                    }
                     store.deleteTeknisi(t.id);
                     toast.success("Teknisi dihapus");
                   }}

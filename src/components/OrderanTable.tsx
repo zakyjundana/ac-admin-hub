@@ -106,6 +106,13 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                   <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => {
+                      if (typeof pendo !== "undefined") {
+                        pendo.track("order_deleted", {
+                          order_id: o.id,
+                          order_status: o.status,
+                          wilayah: o.wilayah,
+                        });
+                      }
                       store.deleteOrderan(o.id);
                       toast.success("Orderan dihapus");
                     }}
@@ -182,9 +189,19 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                 )}
                 <Select
                   value={o.teknisi_id ?? "none"}
-                  onValueChange={(v) =>
-                    store.updateOrderan(o.id, { teknisi_id: v === "none" ? null : v })
-                  }
+                  onValueChange={(v) => {
+                    const newTekId = v === "none" ? null : v;
+                    const assignedTek = newTekId ? teknisi.find((t) => t.id === newTekId) : null;
+                    if (newTekId && typeof pendo !== "undefined") {
+                      pendo.track("technician_assigned_to_order", {
+                        order_id: o.id,
+                        technician_id: newTekId,
+                        technician_wilayah: assignedTek?.wilayah || "",
+                        order_wilayah: o.wilayah,
+                      });
+                    }
+                    store.updateOrderan(o.id, { teknisi_id: newTekId });
+                  }}
                 >
                   <SelectTrigger className="h-8 text-xs w-full sm:w-44">
                     <SelectValue placeholder="Pilih teknisi" />
@@ -198,9 +215,18 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
                 </Select>
                 <Select
                   value={o.status}
-                  onValueChange={(v) =>
-                    store.updateOrderan(o.id, { status: v as Orderan["status"] })
-                  }
+                  onValueChange={(v) => {
+                    if (typeof pendo !== "undefined") {
+                      pendo.track("order_status_changed", {
+                        order_id: o.id,
+                        previous_status: o.status,
+                        new_status: v,
+                        wilayah: o.wilayah,
+                        has_spare_parts: (o.spare_parts?.length ?? 0) > 0,
+                      });
+                    }
+                    store.updateOrderan(o.id, { status: v as Orderan["status"] });
+                  }}
                 >
                   <SelectTrigger className="h-8 text-xs w-full sm:w-40">
                     <SelectValue />
@@ -267,6 +293,22 @@ export function OrderanTable({ orderan, teknisi, onEdit, emptyText, showKirimJad
               className="w-full sm:flex-1 text-xs flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold"
               onClick={() => {
                 if (!sharingData) return;
+                if (typeof pendo !== "undefined") {
+                  if (sharingData.type === "jadwal") {
+                    pendo.track("schedule_shared_via_whatsapp", {
+                      order_id: sharingData.order.id,
+                      technician_name: sharingData.tek?.nama || "",
+                      scheduled_date: sharingData.order.tanggal,
+                      scheduled_time: sharingData.order.jam,
+                    });
+                  } else {
+                    pendo.track("invoice_shared_via_whatsapp", {
+                      order_id: sharingData.order.id,
+                      service_type: sharingData.order.keluhan?.toLowerCase().includes("cuci") ? "cuci" : "perbaikan",
+                      has_spare_parts: (sharingData.order.spare_parts?.length ?? 0) > 0,
+                    });
+                  }
+                }
                 let formattedPhone = sharingData.order.no_wa.replace(/[^0-9]/g, "");
                 if (formattedPhone.startsWith("0")) {
                   formattedPhone = "62" + formattedPhone.slice(1);

@@ -170,6 +170,16 @@ function BookingPage() {
       jam: timeOnly,
     });
 
+    if (typeof pendo !== "undefined") {
+      pendo.track("customer_booking_submitted", {
+        shop_id: shop,
+        booking_date: format(selectedDate, "yyyy-MM-dd"),
+        time_slot: form.waktu,
+        wilayah: form.wilayah,
+        keluhan_type: form.keluhan.toLowerCase().includes("cuci") ? "cuci" : "perbaikan",
+      });
+    }
+
     setStep(3);
     toast.success("Booking berhasil dikirim!");
   };

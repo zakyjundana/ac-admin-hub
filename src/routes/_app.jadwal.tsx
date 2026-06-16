@@ -185,6 +185,13 @@ function JadwalPage() {
                   ? `${window.location.origin}/book?shop=${user?.id || "demo-user-id"}`
                   : `https://coolboard.lovable.app/book?shop=${user?.id || "demo-user-id"}`;
                 const pesan = `Halo! Sekarang Anda bisa melakukan booking jadwal servis/cuci AC Anda secara langsung dan memilih tanggal kosong melalui kalender online kami di sini:\n\n${url}`;
+                if (typeof pendo !== "undefined") {
+                  pendo.track("booking_link_shared", {
+                    share_method: "whatsapp",
+                    shop_id: user?.id || "demo-user-id",
+                    source_page: "jadwal",
+                  });
+                }
                 window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
                 setShowShare(false);
               }}

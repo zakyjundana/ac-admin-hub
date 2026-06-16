@@ -68,11 +68,23 @@ export default function LoginPage() {
     try {
       if (isConfigured) {
         await signIn(form.email, form.password);
+        if (typeof pendo !== "undefined") {
+          pendo.track("user_logged_in", {
+            login_method: "email",
+            is_demo_mode: false,
+          });
+        }
         window.location.href = "/dashboard";
       } else {
         // Mode demo — langsung ke dashboard
         if (typeof document !== "undefined") {
           document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
+        }
+        if (typeof pendo !== "undefined") {
+          pendo.track("user_logged_in", {
+            login_method: "email",
+            is_demo_mode: true,
+          });
         }
         setTimeout(() => (window.location.href = "/dashboard"), 800);
       }
@@ -106,6 +118,12 @@ export default function LoginPage() {
             ? "https://coolboard.lovable.app"
             : window.location.origin
           : "https://coolboard.lovable.app";
+      if (typeof pendo !== "undefined") {
+        pendo.track("google_login_initiated", {
+          provider: "google",
+          redirect_to: "/login",
+        });
+      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

@@ -58,9 +58,29 @@ function StokPage() {
     if (!form.nama.trim()) { toast.error("Nama wajib diisi"); return; }
     if (editing) {
       store.updateSparePart(editing.id, form);
+      if (typeof pendo !== "undefined") {
+        pendo.track("spare_part_updated", {
+          part_id: editing.id,
+          part_name: form.nama,
+          kategori: form.kategori,
+          stok: form.stok,
+          stok_minimum: form.stok_minimum,
+          harga: form.harga,
+        });
+      }
       toast.success("Spare part diperbarui");
     } else {
       store.addSparePart(form);
+      if (typeof pendo !== "undefined") {
+        pendo.track("spare_part_added", {
+          part_name: form.nama,
+          kategori: form.kategori,
+          initial_stock: form.stok,
+          stok_minimum: form.stok_minimum,
+          harga: form.harga,
+          satuan: form.satuan,
+        });
+      }
       toast.success("Spare part ditambahkan");
     }
     setOpen(false);
@@ -121,7 +141,18 @@ function StokPage() {
                     <Edit3 className="size-3.5" />
                   </Button>
                   <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => { store.deleteSparePart(s.id); toast.success("Dihapus"); }}>
+                    onClick={() => {
+                      if (typeof pendo !== "undefined") {
+                        pendo.track("spare_part_deleted", {
+                          part_id: s.id,
+                          part_name: s.nama,
+                          kategori: s.kategori,
+                          remaining_stock: s.stok,
+                        });
+                      }
+                      store.deleteSparePart(s.id);
+                      toast.success("Dihapus");
+                    }}>
                     <Trash2 className="size-3.5" />
                   </Button>
                 </div>
@@ -135,10 +166,34 @@ function StokPage() {
                   <div className="text-[11px] text-muted-foreground">min {s.stok_minimum} {s.satuan}</div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" className="size-8" onClick={() => store.adjustStok(s.id, -1)}>
+                  <Button variant="outline" size="icon" className="size-8" onClick={() => {
+                    const newStock = Math.max(0, s.stok - 1);
+                    if (typeof pendo !== "undefined") {
+                      pendo.track("stock_adjusted", {
+                        part_id: s.id,
+                        part_name: s.nama,
+                        adjustment_delta: -1,
+                        new_stock_level: newStock,
+                        is_below_minimum: newStock <= s.stok_minimum,
+                      });
+                    }
+                    store.adjustStok(s.id, -1);
+                  }}>
                     <Minus className="size-3.5" />
                   </Button>
-                  <Button variant="outline" size="icon" className="size-8" onClick={() => store.adjustStok(s.id, +1)}>
+                  <Button variant="outline" size="icon" className="size-8" onClick={() => {
+                    const newStock = s.stok + 1;
+                    if (typeof pendo !== "undefined") {
+                      pendo.track("stock_adjusted", {
+                        part_id: s.id,
+                        part_name: s.nama,
+                        adjustment_delta: 1,
+                        new_stock_level: newStock,
+                        is_below_minimum: newStock <= s.stok_minimum,
+                      });
+                    }
+                    store.adjustStok(s.id, +1);
+                  }}>
                     <Plus className="size-3.5" />
                   </Button>
                 </div>
