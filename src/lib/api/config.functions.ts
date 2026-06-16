@@ -102,3 +102,13 @@ export const insertClientBooking = createServerFn({ method: "POST" })
       throw err;
     }
   });
+
+export const getDebugServerEnv = createServerFn({ method: "GET" }).handler(async () => {
+  const env = typeof process !== "undefined" ? process.env : {};
+  return {
+    hasUrl: !!(env.SB_URL || env.VITE_SB_URL || env.VITE_SUPABASE_URL || env.SUPABASE_URL),
+    hasAnonKey: !!(env.SB_ANON_KEY || env.VITE_SB_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY),
+    hasServiceKey: !!(env.SB_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_ROLE_KEY),
+    serviceKeyNameUsed: env.SB_SERVICE_ROLE_KEY ? "SB_SERVICE_ROLE_KEY" : env.SUPABASE_SERVICE_ROLE_KEY ? "SUPABASE_SERVICE_ROLE_KEY" : "NONE",
+  };
+});
