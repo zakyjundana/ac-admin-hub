@@ -27,7 +27,8 @@ import {
   Clock, 
   Sparkles,
   Map,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from "lucide-react";
 import { useStore, store } from "@/lib/dataStore";
 import { WILAYAH_LIST, type Orderan } from "@/lib/mockData";
@@ -90,6 +91,7 @@ function BookingPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Calendar, 2: Form, 3: Success
+  const [submitting, setSubmitting] = useState(false);
 
   // Form States
   const [form, setForm] = useState({
@@ -145,7 +147,7 @@ function BookingPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate) return;
 
@@ -154,24 +156,32 @@ function BookingPage() {
       return;
     }
 
-    // Prepare time slot value
-    const timeOnly = form.waktu.split(" ")[0]; // e.g. "09:00"
+    setSubmitting(true);
+    try {
+      // Prepare time slot value
+      const timeOnly = form.waktu.split(" ")[0]; // e.g. "09:00"
 
-    // Submit client booking to the store
-    store.addClientBooking(shop, {
-      nama_pelanggan: form.nama,
-      no_wa: form.no_wa,
-      alamat: form.alamat,
-      wilayah: form.wilayah,
-      keluhan: form.keluhan,
-      status: "Belum Selesai",
-      teknisi_id: null,
-      tanggal: format(selectedDate, "yyyy-MM-dd"),
-      jam: timeOnly,
-    });
+      // Submit client booking to the store
+      await store.addClientBooking(shop, {
+        nama_pelanggan: form.nama,
+        no_wa: form.no_wa,
+        alamat: form.alamat,
+        wilayah: form.wilayah,
+        keluhan: form.keluhan,
+        status: "Belum Selesai",
+        teknisi_id: null,
+        tanggal: format(selectedDate, "yyyy-MM-dd"),
+        jam: timeOnly,
+      });
 
-    setStep(3);
-    toast.success("Booking berhasil dikirim!");
+      setStep(3);
+      toast.success("Booking berhasil dikirim!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Gagal mengirim booking. Silakan coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -407,9 +417,17 @@ function BookingPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-bold rounded-xl py-3.5 shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform text-xs"
+                disabled={submitting}
+                className="w-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-bold rounded-xl py-3.5 shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform text-xs flex items-center justify-center gap-2"
               >
-                Kirim Pemesanan Sekarang
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Mengirim Pemesanan...
+                  </>
+                ) : (
+                  "Kirim Pemesanan Sekarang"
+                )}
               </Button>
             </form>
           </div>

@@ -244,6 +244,7 @@ export const store = {
           });
         } catch (err) {
           console.error("Error inserting booking via server function:", err);
+          throw err;
         }
       }
     } else {
@@ -280,6 +281,7 @@ export const store = {
           });
         } catch (err) {
           console.error("Error inserting booking to other shop via server function:", err);
+          throw err;
         }
       }
 

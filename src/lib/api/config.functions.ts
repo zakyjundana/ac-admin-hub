@@ -67,10 +67,10 @@ export const insertClientBooking = createServerFn({ method: "POST" })
         auth: { persistSession: false }
       });
 
-      // 1. Verify that shop actually exists in auth.users and has completed onboarding
+      // 1. Verify that shop actually exists in auth.users
       const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(data.shopId);
-      if (userError || !userData?.user || !userData.user.user_metadata?.onboarding_done) {
-        console.warn(`Booking blocked: shopId ${data.shopId} does not exist or has not completed onboarding.`, userError);
+      if (userError || !userData?.user) {
+        console.warn(`Booking blocked: shopId ${data.shopId} does not exist.`, userError);
         throw new Error("Toko tidak terdaftar atau belum aktif.");
       }
 
