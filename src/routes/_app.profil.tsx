@@ -142,15 +142,12 @@ function ProfilPage() {
 
       const res = await ipaymuFn({
         data: {
-          userId: user.id,
-          email: user.email || "",
-          nama: user.nama || "Pengguna",
-          noHp: user.noHp || "",
           planName: plan,
           origin: window.location.origin,
           accessToken,
         },
       });
+
 
       if (res.success && res.paymentUrl) {
         toast.success("Mengarahkan ke halaman pembayaran iPaymu...");
