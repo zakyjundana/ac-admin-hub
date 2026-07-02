@@ -12,7 +12,20 @@ import { WILAYAH_LIST } from "@/lib/mockData";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/teknisi")({
-  head: () => ({ meta: [{ title: "Teknisi — CoolService" }] }),
+  head: () => {
+    const title = "Manajemen Teknisi — CoolService";
+    const description = "Kelola data teknisi service AC, kontak, dan wilayah kerja untuk pembagian tugas harian yang lebih rapi.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/teknisi" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/teknisi" }],
+    };
+  },
   component: TeknisiPage,
 });
 

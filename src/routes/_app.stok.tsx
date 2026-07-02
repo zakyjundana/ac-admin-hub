@@ -13,7 +13,20 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/stok")({
-  head: () => ({ meta: [{ title: "Manajemen Stok — CoolService" }] }),
+  head: () => {
+    const title = "Manajemen Stok — CoolService";
+    const description = "Pantau stok spare part AC, kategori, harga jual, dan peringatan otomatis saat persediaan mulai menipis.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/stok" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/stok" }],
+    };
+  },
   component: StokPage,
 });
 

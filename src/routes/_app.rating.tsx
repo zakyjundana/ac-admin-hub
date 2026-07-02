@@ -18,7 +18,20 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_app/rating")({
-  head: () => ({ meta: [{ title: "Rating & Feedback — CoolService" }] }),
+  head: () => {
+    const title = "Rating & Feedback — CoolService";
+    const description = "Feedback pelanggan dan skor kepuasan per teknisi service AC untuk evaluasi mutu kerja dan peningkatan layanan.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/rating" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/rating" }],
+    };
+  },
   component: RatingPage,
 });
 

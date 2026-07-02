@@ -17,7 +17,20 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/_app/jadwal")({
-  head: () => ({ meta: [{ title: "Manajemen Jadwal — CoolService" }] }),
+  head: () => {
+    const title = "Manajemen Jadwal — CoolService";
+    const description = "Kalender interaktif untuk atur jadwal servis AC harian & bulanan serta assign teknisi berdasarkan wilayah kerja.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/jadwal" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/jadwal" }],
+    };
+  },
   component: JadwalPage,
 });
 

@@ -26,7 +26,20 @@ import { createIPaymuPayment, checkOutboundIP } from "@/lib/api/ipaymu.functions
 import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/_app/profil")({
-  head: () => ({ meta: [{ title: "Profil Bisnis — CoolService" }] }),
+  head: () => {
+    const title = "Profil Bisnis — CoolService";
+    const description = "Kelola data bisnis service AC, status langganan aktif, dan upgrade paket berbayar via pembayaran online yang aman.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/profil" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/profil" }],
+    };
+  },
   component: ProfilPage,
 });
 
