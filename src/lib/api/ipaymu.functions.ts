@@ -132,8 +132,9 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
         .digest("hex");
 
       console.log(
-        `Creating iPaymu payment link for ${data.email} (${data.planName}) at ${baseUrl}...`,
+        `Creating iPaymu payment link for ${finalEmail} (${data.planName}) at ${baseUrl}...`,
       );
+
 
       let resData: any = {};
       try {
