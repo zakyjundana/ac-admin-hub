@@ -124,15 +124,12 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
 
       const res = await ipaymuFn({
         data: {
-          userId: displayUser.id,
-          email: displayUser.email || "",
-          nama: displayUser.nama || "Pengguna",
-          noHp: displayUser.noHp || "",
           planName: plan,
           origin: window.location.origin,
           accessToken,
         },
       });
+
 
       if (res.success && res.paymentUrl) {
         toast.success("Mengarahkan ke halaman pembayaran iPaymu...");

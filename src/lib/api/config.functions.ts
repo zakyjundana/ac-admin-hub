@@ -29,17 +29,17 @@ export const checkServerSession = createServerFn({ method: "GET" }).handler(asyn
 export const insertClientBooking = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      shopId: z.string(),
+      shopId: z.string().uuid().max(64),
       booking: z.object({
-        nama_pelanggan: z.string(),
-        no_wa: z.string(),
-        alamat: z.string(),
-        wilayah: z.string(),
-        keluhan: z.string(),
-        status: z.string(),
-        teknisi_id: z.string().nullable(),
-        tanggal: z.string(),
-        jam: z.string(),
+        nama_pelanggan: z.string().trim().min(1).max(100),
+        no_wa: z.string().trim().min(6).max(20).regex(/^[0-9+\-\s()]+$/, "Nomor WA tidak valid"),
+        alamat: z.string().trim().min(1).max(500),
+        wilayah: z.string().trim().min(1).max(80),
+        keluhan: z.string().trim().min(1).max(1000),
+        status: z.string().max(30),
+        teknisi_id: z.string().uuid().nullable(),
+        tanggal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal harus YYYY-MM-DD"),
+        jam: z.string().max(20),
       }),
     })
   )
@@ -103,12 +103,3 @@ export const insertClientBooking = createServerFn({ method: "POST" })
     }
   });
 
-export const getDebugServerEnv = createServerFn({ method: "GET" }).handler(async () => {
-  const env = typeof process !== "undefined" ? process.env : {};
-  return {
-    hasUrl: !!(env.SB_URL || env.VITE_SB_URL || env.VITE_SUPABASE_URL || env.SUPABASE_URL),
-    hasAnonKey: !!(env.SB_ANON_KEY || env.VITE_SB_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY),
-    hasServiceKey: !!(env.SB_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_ROLE_KEY),
-    serviceKeyNameUsed: env.SB_SERVICE_ROLE_KEY ? "SB_SERVICE_ROLE_KEY" : env.SUPABASE_SERVICE_ROLE_KEY ? "SUPABASE_SERVICE_ROLE_KEY" : "NONE",
-  };
-});

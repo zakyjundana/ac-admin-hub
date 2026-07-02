@@ -5,13 +5,12 @@ import { z } from "zod";
 export const createIPaymuPayment = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      userId: z.string(),
-      email: z.string(),
-      nama: z.string(),
-      noHp: z.string(),
+      // NOTE: userId/email/nama/noHp intentionally NOT accepted from client.
+      // They are derived from the authenticated Supabase session on the server
+      // to prevent IDOR (paying / upgrading another user's account).
       planName: z.enum(["starter", "pro"]),
-      origin: z.string(),
-      accessToken: z.string().optional(),
+      origin: z.string().max(200).optional(),
+      accessToken: z.string().min(10).max(4000),
     }),
   )
   .handler(async ({ data }) => {
@@ -41,32 +40,53 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
 
     const isSupabaseConfigured = !!url && !!anonKey;
 
-    let finalUserId = data.userId;
-    let finalEmail = data.email;
-    let finalNama = data.nama;
-    let finalNoHp = data.noHp;
+    if (!isSupabaseConfigured) {
+      // Cannot verify identity → refuse to create real payment links.
+      return {
+        success: false as const,
+        message: "Server autentikasi belum dikonfigurasi.",
+      };
+    }
 
-    if (isSupabaseConfigured) {
-      if (!data.accessToken) {
-        throw new Error("Akses ditolak: Token autentikasi diperlukan.");
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(url, anonKey, {
+      auth: { persistSession: false },
+    });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(data.accessToken);
+    if (userError || !user) {
+      console.error("Token verification failed in createIPaymuPayment:", userError);
+      throw new Error("Akses ditolak: Token autentikasi tidak valid.");
+    }
+
+    // All identity fields come from the verified JWT — never from the client.
+    const finalUserId = user.id;
+    const finalEmail = user.email || "";
+    const finalNama = user.user_metadata?.nama || "Pengguna";
+    const finalNoHp = user.user_metadata?.no_hp || "";
+
+    // Trust APP_ORIGIN from env; only fall back to client-provided origin if
+    // it matches the trusted host. This prevents an attacker from redirecting
+    // the notifyUrl to an evil domain and forging payment success.
+    const trustedOrigin = env.APP_ORIGIN || env.VITE_APP_ORIGIN || "";
+    let effectiveOrigin = trustedOrigin;
+    if (!effectiveOrigin && data.origin) {
+      try {
+        const parsed = new URL(data.origin);
+        // Only accept https origins (or http on localhost for dev)
+        const isLocal = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+        if (parsed.protocol === "https:" || (isLocal && parsed.protocol === "http:")) {
+          effectiveOrigin = `${parsed.protocol}//${parsed.host}`;
+        }
+      } catch {
+        /* ignore invalid origin */
       }
-
-      const { createClient } = await import("@supabase/supabase-js");
-      const supabase = createClient(url, anonKey, {
-        auth: { persistSession: false },
-      });
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser(data.accessToken);
-      if (userError || !user) {
-        console.error("Token verification failed in createIPaymuPayment:", userError);
-        throw new Error("Akses ditolak: Token autentikasi tidak valid.");
-      }
-
-      // Override client parameters with secure values from auth session JWT
-      finalUserId = user.id;
-      finalEmail = user.email || "";
-      finalNama = user.user_metadata?.nama || "Pengguna";
-      finalNoHp = user.user_metadata?.no_hp || "";
+    }
+    if (!effectiveOrigin) {
+      return {
+        success: false as const,
+        message: "Origin aplikasi tidak dikonfigurasi.",
+      };
     }
 
     const baseUrl = isSandbox
@@ -84,14 +104,15 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
       qty: ["1"],
       price: [price.toString()],
       description: [`Langganan Bulanan ${planLabel}`],
-      returnUrl: `${data.origin}/profil?payment=success`,
-      cancelUrl: `${data.origin}/profil?payment=cancel`,
-      notifyUrl: `${data.origin}/api/public/ipaymu-webhook`,
+      returnUrl: `${effectiveOrigin}/profil?payment=success`,
+      cancelUrl: `${effectiveOrigin}/profil?payment=cancel`,
+      notifyUrl: `${effectiveOrigin}/api/public/ipaymu-webhook`,
       referenceId: `${finalUserId}:${data.planName}`,
       buyerName: finalNama,
       buyerEmail: finalEmail,
       buyerPhone: finalNoHp,
     };
+
 
     try {
       const bodyString = JSON.stringify(body);
@@ -111,8 +132,9 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
         .digest("hex");
 
       console.log(
-        `Creating iPaymu payment link for ${data.email} (${data.planName}) at ${baseUrl}...`,
+        `Creating iPaymu payment link for ${finalEmail} (${data.planName}) at ${baseUrl}...`,
       );
+
 
       let resData: any = {};
       try {

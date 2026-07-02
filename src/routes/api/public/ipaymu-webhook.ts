@@ -69,16 +69,39 @@ export const Route = createFileRoute("/api/public/ipaymu-webhook")({
             const parts = referenceId.split(":");
             if (parts.length === 2) {
               const [userId, planName] = parts;
+
+              // Validate planName against a strict allowlist to prevent
+              // attackers from injecting arbitrary tier values via reference_id.
+              const ALLOWED_PLANS = ["starter", "pro"] as const;
+              if (!ALLOWED_PLANS.includes(planName as any)) {
+                console.warn("Rejected webhook: invalid planName", planName);
+                return new Response(JSON.stringify({ status: "error", message: "Invalid plan" }), {
+                  status: 400,
+                  headers: { "Content-Type": "application/json" },
+                });
+              }
+
+              // Validate userId shape (UUID) before touching admin API
+              if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+                console.warn("Rejected webhook: invalid userId", userId);
+                return new Response(JSON.stringify({ status: "error", message: "Invalid user" }), {
+                  status: 400,
+                  headers: { "Content-Type": "application/json" },
+                });
+              }
+
               console.log(`Processing upgrade for user ${userId} to plan ${planName}...`);
 
               const adminClient = getSupabaseAdmin();
               if (adminClient) {
-                // Update user metadata in auth.users
+                // Store subscription state in app_metadata (server-only, not
+                // editable by the end user) instead of user_metadata.
                 const { error } = await adminClient.auth.admin.updateUserById(userId, {
-                  user_metadata: {
+                  app_metadata: {
                     subscription_tier: planName,
                     subscription_status: "active",
                     payment_date: new Date().toISOString(),
+                    last_trx_id: trxId || null,
                   },
                 });
 
@@ -90,13 +113,14 @@ export const Route = createFileRoute("/api/public/ipaymu-webhook")({
                   });
                 }
 
-                console.log(`Successfully upgraded user ${userId} metadata to plan ${planName}`);
+                console.log(`Successfully upgraded user ${userId} app_metadata to plan ${planName}`);
               } else {
                 console.warn("Supabase admin client is not available (missing service role key).");
               }
             } else {
               console.warn("Invalid reference_id format:", referenceId);
             }
+
           } else {
             console.log("Transaction status is not successful or reference_id is missing.");
           }
