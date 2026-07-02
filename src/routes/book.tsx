@@ -62,13 +62,8 @@ function BookingPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Fetch and log server config status to console for easy debugging
-    import("@/lib/api/config.functions").then(({ getDebugServerEnv }) => {
-      getDebugServerEnv().then((res) => {
-        console.log("[DEBUG] Server Environment Status:", res);
-      }).catch((e) => console.error("Failed to get debug server env:", e));
-    });
   }, []);
+
 
   // Load shop specific orders dynamically (protecting privacy)
   const shopOrders = useMemo(() => {
