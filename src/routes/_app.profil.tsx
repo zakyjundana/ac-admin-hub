@@ -100,17 +100,27 @@ function ProfilPage() {
   const [outboundIP, setOutboundIP] = useState<string | null>(null);
 
   useEffect(() => {
-    checkIPFn()
-      .then((res: any) => {
-        if (res.success && res.ip) {
-          setOutboundIP(res.ip);
-        } else {
-          setOutboundIP("Gagal memuat IP");
+    let cancelled = false;
+    (async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) {
+          if (!cancelled) setOutboundIP("Masuk untuk melihat IP");
+          return;
         }
-      })
-      .catch(() => {
-        setOutboundIP("Gagal memuat IP");
-      });
+        const res: any = await checkIPFn({ data: { accessToken } });
+        if (cancelled) return;
+        if (res.success && res.ip) setOutboundIP(res.ip);
+        else setOutboundIP("Gagal memuat IP");
+      } catch {
+        if (!cancelled) setOutboundIP("Gagal memuat IP");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [checkIPFn]);
 
   const handleUpgrade = async (plan: "starter" | "pro") => {

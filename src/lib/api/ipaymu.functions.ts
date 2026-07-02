@@ -191,8 +191,31 @@ export const createIPaymuPayment = createServerFn({ method: "POST" })
   });
 
 // Server function to check outbound IP of the backend server (Forcing IPv4 format)
-export const checkOutboundIP = createServerFn({ method: "GET" })
-  .handler(async () => {
+// Requires an authenticated Supabase session — this endpoint reveals server
+// infrastructure details (outbound IP used for iPaymu allowlisting) and must
+// not be callable anonymously.
+export const checkOutboundIP = createServerFn({ method: "POST" })
+  .inputValidator((input: { accessToken: string }) =>
+    z.object({ accessToken: z.string().min(10) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const env = (globalThis as any).process?.env ?? {};
+    const url = env.SUPABASE_URL || env.VITE_SUPABASE_URL || "";
+    const anonKey =
+      env.SUPABASE_PUBLISHABLE_KEY ||
+      env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      env.SUPABASE_ANON_KEY ||
+      env.VITE_SUPABASE_ANON_KEY ||
+      "";
+    if (!url || !anonKey) {
+      return { success: false as const, message: "Server autentikasi belum dikonfigurasi." };
+    }
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
+    const { data: { user }, error: userError } = await supabase.auth.getUser(data.accessToken);
+    if (userError || !user) {
+      return { success: false as const, message: "Akses ditolak." };
+    }
     try {
       console.log("Checking outbound IPv4 of server...");
 
