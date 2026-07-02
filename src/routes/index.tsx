@@ -25,6 +25,28 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Aplikasi manajemen operasional bisnis service AC terlengkap di Indonesia. Atur jadwal teknisi, invoice, and monitoring stok dalam satu dashboard." },
       { property: "og:title", content: "CoolService - Kelola Teknisi & Orderan AC Lebih Rapi" },
       { property: "og:description", content: "Aplikasi manajemen operasional bisnis service AC terlengkap di Indonesia." },
+      { property: "og:url", content: "https://coolboard.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://coolboard.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "CoolService",
+          url: "https://coolboard.lovable.app",
+          telephone: "+62-21-0000-0000",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "Komplek Bintara Jaya Permai Blok C280, Bintara, Bekasi Barat",
+            addressLocality: "Kota Bekasi",
+            addressRegion: "Jawa Barat",
+            addressCountry: "ID",
+          },
+          areaServed: "Indonesia",
+        }),
+      },
     ],
   }),
   component: LandingPage,

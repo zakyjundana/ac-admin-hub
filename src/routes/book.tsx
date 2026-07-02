@@ -199,10 +199,11 @@ function BookingPage() {
 
       {/* Header */}
       <header className="w-full max-w-lg text-center py-4 relative z-10 flex flex-col items-center">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/20 mb-3 animate-pulse">
+        <h1 className="sr-only">Booking Jadwal Servis AC Online</h1>
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/20 mb-3 animate-pulse" aria-hidden="true">
           <Wrench className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-xl font-bold tracking-tight">{namaBisnis}</h1>
+        <p className="text-xl font-bold tracking-tight" aria-label={`Bisnis: ${namaBisnis}`}>{namaBisnis}</p>
         <p className="text-xs text-muted-foreground mt-0.5">Sistem Booking Servis AC Online Mandiri</p>
       </header>
 
