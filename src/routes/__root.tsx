@@ -97,6 +97,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "CoolService",
+          url: "https://coolboard.lovable.app",
+          logo: "https://coolboard.lovable.app/favicon.ico",
+          sameAs: [],
+        }),
+      },
+    ],
   }),
   beforeLoad: async () => {
     // If we're on the client side and Supabase has not been marked as configured,

@@ -11,7 +11,20 @@ import { useStore } from "@/lib/dataStore";
 import { WILAYAH_LIST, STATUS_LIST, type Orderan } from "@/lib/mockData";
 
 export const Route = createFileRoute("/_app/orderan")({
-  head: () => ({ meta: [{ title: "Orderan — CoolService" }] }),
+  head: () => {
+    const title = "Daftar Orderan — CoolService";
+    const description = "Daftar seluruh orderan servis AC dengan filter status, wilayah, dan pencarian pelanggan untuk operasional harian.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/orderan" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/orderan" }],
+    };
+  },
   component: OrderanPage,
 });
 

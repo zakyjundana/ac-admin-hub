@@ -10,7 +10,20 @@ import { cekGaransi, type RiwayatKerusakan } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/riwayat")({
-  head: () => ({ meta: [{ title: "Riwayat & Garansi — CoolService" }] }),
+  head: () => {
+    const title = "Riwayat & Garansi — CoolService";
+    const description = "Riwayat servis AC per pelanggan lengkap dengan deteksi otomatis masa garansi aktif untuk penanganan komplain berulang.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/riwayat" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/riwayat" }],
+    };
+  },
   component: RiwayatPage,
 });
 

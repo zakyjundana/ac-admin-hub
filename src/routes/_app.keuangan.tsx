@@ -28,7 +28,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_app/keuangan")({
-  head: () => ({ meta: [{ title: "Keuangan & Insentif — CoolService" }] }),
+  head: () => {
+    const title = "Keuangan & Insentif — CoolService";
+    const description = "Pantau pemasukan, pengeluaran, laba bersih bulanan, dan hitung insentif harian teknisi service AC secara otomatis.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/keuangan" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/keuangan" }],
+    };
+  },
   component: KeuanganPage,
 });
 

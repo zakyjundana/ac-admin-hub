@@ -27,7 +27,20 @@ import { toast } from "sonner";
 const FinancialChart = lazy(() => import("@/components/FinancialChart"));
 
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard Analitik — CoolService" }] }),
+  head: () => {
+    const title = "Dashboard Analitik — CoolService";
+    const description = "Ringkasan pendapatan harian, jumlah orderan aktif, dan performa teknisi bisnis service AC dalam satu tampilan real-time.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://coolboard.lovable.app/dashboard" },
+      ],
+      links: [{ rel: "canonical", href: "https://coolboard.lovable.app/dashboard" }],
+    };
+  },
   component: DashboardPage,
 });
 
