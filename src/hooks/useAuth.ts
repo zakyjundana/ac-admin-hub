@@ -54,14 +54,16 @@ export function useAuth(): AuthState {
         }
         if (active) {
           if (u) {
+            const tier = (u as any).app_metadata?.subscription_tier || "free";
+            const subStatus = (u as any).app_metadata?.subscription_status || "active";
             pendo.identify({
               visitor: {
                 id: u.id,
                 email: u.email,
                 full_name: u.user_metadata?.nama,
                 nama_bisnis: u.user_metadata?.nama_bisnis,
-                subscription_tier: u.user_metadata?.subscription_tier || "free",
-                subscription_status: u.user_metadata?.subscription_status || "active",
+                subscription_tier: tier,
+                subscription_status: subStatus,
               },
             });
           }
@@ -74,8 +76,8 @@ export function useAuth(): AuthState {
                   nama: u.user_metadata?.nama,
                   namaBisnis: u.user_metadata?.nama_bisnis,
                   noHp: u.user_metadata?.no_hp,
-                  subscriptionTier: u.user_metadata?.subscription_tier || "free",
-                  subscriptionStatus: u.user_metadata?.subscription_status || "active",
+                  subscriptionTier: (u as any).app_metadata?.subscription_tier || "free",
+                  subscriptionStatus: (u as any).app_metadata?.subscription_status || "active",
                 }
               : null,
           });
@@ -94,14 +96,16 @@ export function useAuth(): AuthState {
         }
         if (active) {
           if (u) {
+            const tier = (u as any).app_metadata?.subscription_tier || "free";
+            const subStatus = (u as any).app_metadata?.subscription_status || "active";
             pendo.identify({
               visitor: {
                 id: u.id,
                 email: u.email,
                 full_name: u.user_metadata?.nama,
                 nama_bisnis: u.user_metadata?.nama_bisnis,
-                subscription_tier: u.user_metadata?.subscription_tier || "free",
-                subscription_status: u.user_metadata?.subscription_status || "active",
+                subscription_tier: tier,
+                subscription_status: subStatus,
               },
             });
           }
@@ -114,13 +118,14 @@ export function useAuth(): AuthState {
                   nama: u.user_metadata?.nama,
                   namaBisnis: u.user_metadata?.nama_bisnis,
                   noHp: u.user_metadata?.no_hp,
-                  subscriptionTier: u.user_metadata?.subscription_tier || "free",
-                  subscriptionStatus: u.user_metadata?.subscription_status || "active",
+                  subscriptionTier: (u as any).app_metadata?.subscription_tier || "free",
+                  subscriptionStatus: (u as any).app_metadata?.subscription_status || "active",
                 }
               : null,
           });
         }
       });
+
       listenerSubscription = listener.subscription;
     }
 
