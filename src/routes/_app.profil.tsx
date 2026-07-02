@@ -103,7 +103,7 @@ function ProfilPage() {
     let cancelled = false;
     (async () => {
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
+        const { supabase } = await import("@/lib/supabase");
         const { data: sessionData } = await supabase.auth.getSession();
         const accessToken = sessionData.session?.access_token;
         if (!accessToken) {
