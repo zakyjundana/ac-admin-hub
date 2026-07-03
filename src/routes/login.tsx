@@ -78,16 +78,8 @@ export default function LoginPage() {
     setError("");
 
     try {
-      if (isConfigured) {
-        await signIn(form.email, form.password);
-        window.location.href = "/dashboard";
-      } else {
-        // Mode demo — langsung ke dashboard
-        if (typeof document !== "undefined") {
-          document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
-        }
-        setTimeout(() => (window.location.href = "/dashboard"), 800);
-      }
+      await signIn(form.email, form.password);
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
       if (msg.includes("Invalid login credentials")) {
