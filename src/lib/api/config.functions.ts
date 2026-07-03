@@ -15,6 +15,8 @@ export const getSupabaseConfig = createServerFn({ method: "GET" }).handler(async
     env.VITE_SB_ANON_KEY ||
     env.VITE_SUPABASE_ANON_KEY ||
     env.SUPABASE_ANON_KEY ||
+    env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    env.SUPABASE_PUBLISHABLE_KEY ||
     "";
   return { url, anonKey };
 });

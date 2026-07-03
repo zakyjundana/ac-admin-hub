@@ -78,16 +78,8 @@ export default function LoginPage() {
     setError("");
 
     try {
-      if (isConfigured) {
-        await signIn(form.email, form.password);
-        window.location.href = "/dashboard";
-      } else {
-        // Mode demo — langsung ke dashboard
-        if (typeof document !== "undefined") {
-          document.cookie = `sb-session=active; path=/; max-age=${3600 * 24 * 7}; SameSite=Lax`;
-        }
-        setTimeout(() => (window.location.href = "/dashboard"), 800);
-      }
+      await signIn(form.email, form.password);
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
       if (msg.includes("Invalid login credentials")) {
@@ -103,28 +95,15 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    // Call isSupabaseConfigured() directly (not hook) to get real-time value
-    if (!isSupabaseConfigured()) {
-      toast.error("Login Google tidak tersedia di mode demo.");
-      return;
-    }
     setLoading(true);
     try {
-      // Use window.location.origin for the redirect, but ensure it points to the
-      // correct production domain (not localhost from dev/SSR context).
-      const origin =
-        typeof window !== "undefined"
-          ? window.location.origin.includes("localhost")
-            ? "https://coolboard.lovable.app"
-            : window.location.origin
-          : "https://coolboard.lovable.app";
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${origin}/login`,
-        },
+      const { lovable } = await import("@/integrations/lovable/index");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
+      if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
+      if (result.redirected) return;
+      window.location.href = "/dashboard";
     } catch (err: any) {
       toast.error(err.message || "Gagal masuk dengan Google.");
       setLoading(false);
@@ -209,13 +188,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Demo mode notice — only shown after client mount to avoid hydration mismatch */}
-          {isMounted && !isConfigured && (
-            <div className="mb-6 flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Mode demo aktif — klik Masuk untuk langsung ke dashboard.</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
