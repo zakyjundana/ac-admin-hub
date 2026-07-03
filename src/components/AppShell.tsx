@@ -258,31 +258,7 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
                     {displayUser.namaBisnis || "CoolService"}
                   </div>
                   
-                  {/* Subscription Plan Badge */}
-                  <div className="mt-1 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                    <span className={cn(
-                      "inline-block text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded border",
-                      displayUser.subscriptionTier === "pro"
-                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                        : displayUser.subscriptionTier === "starter"
-                        ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
-                        : "bg-white/5 text-muted-foreground border-white/10"
-                    )}>
-                      {displayUser.subscriptionTier || "free"} Plan
-                    </span>
-                    {(displayUser.subscriptionTier === "free" || displayUser.subscriptionTier === "starter") && (
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setShowUpgrade(true);
-                        }}
-                        className="text-[10px] text-primary hover:text-primary-glow hover:underline font-semibold"
-                      >
-                        Upgrade
-                      </button>
-                    )}
-                  </div>
+                  {/* Subscription plan/upgrade UI hidden — semua fitur gratis */}
                 </div>
               </div>
             </Link>
