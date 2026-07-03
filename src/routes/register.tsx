@@ -70,27 +70,19 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      if (isSupabaseConfigured()) {
-        const data = await signUp({
-          email: form.email,
-          password: form.password,
-          nama: form.nama,
-          namaBisnis: form.namaBisnis,
-          noHp: form.noHp,
-        });
-        
-        if (data?.session) {
-          setSuccess(true);
-          // Lanjut onboarding setelah 1.5 detik
-          setTimeout(() => (window.location.href = "/onboarding"), 1500);
-        } else {
-          // Email confirmation is enabled in Supabase
-          setNeedVerification(true);
-        }
-      } else {
-        // Mode demo — langsung ke onboarding
+      const data = await signUp({
+        email: form.email,
+        password: form.password,
+        nama: form.nama,
+        namaBisnis: form.namaBisnis,
+        noHp: form.noHp,
+      });
+
+      if (data?.session) {
         setSuccess(true);
-        setTimeout(() => (window.location.href = "/onboarding"), 800);
+        setTimeout(() => (window.location.href = "/onboarding"), 1500);
+      } else {
+        setNeedVerification(true);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
@@ -107,19 +99,15 @@ export default function RegisterPage() {
   }
 
   async function handleGoogleLogin() {
-    if (!isSupabaseConfigured()) {
-      toast.error("Supabase belum dikonfigurasi.");
-      return;
-    }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
+      const { lovable } = await import("@/integrations/lovable/index");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
+      if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
+      if (result.redirected) return;
+      window.location.href = "/onboarding";
     } catch (err: any) {
       toast.error(err.message || "Gagal daftar dengan Google.");
       setLoading(false);
