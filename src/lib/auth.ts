@@ -122,13 +122,14 @@ export function isSupabaseConfigured() {
     return (
       (!!env.SB_URL && !!env.SB_ANON_KEY) ||
       (!!env.VITE_SB_URL && !!env.VITE_SB_ANON_KEY) ||
-      (!!env.VITE_SUPABASE_URL && !!env.VITE_SUPABASE_ANON_KEY) ||
-      (!!env.SUPABASE_URL && !!env.SUPABASE_ANON_KEY)
+      (!!env.VITE_SUPABASE_URL && (!!env.VITE_SUPABASE_ANON_KEY || !!env.VITE_SUPABASE_PUBLISHABLE_KEY)) ||
+      (!!env.SUPABASE_URL && (!!env.SUPABASE_ANON_KEY || !!env.SUPABASE_PUBLISHABLE_KEY))
     );
   }
   return (
     runtimeConfigured ||
-    (!!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY) ||
+    (!!import.meta.env.VITE_SUPABASE_URL &&
+      (!!import.meta.env.VITE_SUPABASE_ANON_KEY || !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)) ||
     (!!import.meta.env.VITE_SB_URL && !!import.meta.env.VITE_SB_ANON_KEY)
   );
 }
