@@ -188,13 +188,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Demo mode notice — only shown after client mount to avoid hydration mismatch */}
-          {isMounted && !isConfigured && (
-            <div className="mb-6 flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Mode demo aktif — klik Masuk untuk langsung ke dashboard.</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
