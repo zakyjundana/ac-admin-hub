@@ -302,34 +302,7 @@ function ProfilPage() {
               {user?.namaBisnis || "CoolService"}
             </p>
 
-            {/* Plan Badge Large */}
-            <div className="w-full bg-muted/30 border border-border rounded-xl p-4 mt-2">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-                Status Akun Saat Ini
-              </span>
-              
-              <div className="flex items-center justify-center gap-2">
-                <span className={`text-base font-extrabold uppercase px-3 py-1 rounded-lg border ${
-                  user?.subscriptionTier === "pro"
-                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-sm shadow-amber-500/5"
-                    : user?.subscriptionTier === "starter"
-                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-sm shadow-cyan-500/5"
-                    : "bg-muted text-muted-foreground border-border"
-                }`}>
-                  {user?.subscriptionTier || "free"} Plan
-                </span>
-              </div>
-              
-              <div className="mt-3 text-xs text-muted-foreground">
-                {user?.subscriptionTier === "pro" ? (
-                  <span>Akses tanpa batas ke seluruh modul fitur premium CoolService.</span>
-                ) : user?.subscriptionTier === "starter" ? (
-                  <span>Akses ke fitur esensial untuk mengelola hingga 3 teknisi.</span>
-                ) : (
-                  <span>Akun uji coba gratis dengan fitur manajemen servis dasar.</span>
-                )}
-              </div>
-            </div>
+            {/* Badge status paket disembunyikan — semua fitur gratis */}
           </div>
 
           <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
