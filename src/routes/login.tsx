@@ -103,28 +103,15 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    // Call isSupabaseConfigured() directly (not hook) to get real-time value
-    if (!isSupabaseConfigured()) {
-      toast.error("Login Google tidak tersedia di mode demo.");
-      return;
-    }
     setLoading(true);
     try {
-      // Use window.location.origin for the redirect, but ensure it points to the
-      // correct production domain (not localhost from dev/SSR context).
-      const origin =
-        typeof window !== "undefined"
-          ? window.location.origin.includes("localhost")
-            ? "https://coolboard.lovable.app"
-            : window.location.origin
-          : "https://coolboard.lovable.app";
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${origin}/login`,
-        },
+      const { lovable } = await import("@/integrations/lovable/index");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
+      if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
+      if (result.redirected) return;
+      window.location.href = "/dashboard";
     } catch (err: any) {
       toast.error(err.message || "Gagal masuk dengan Google.");
       setLoading(false);
