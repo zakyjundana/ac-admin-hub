@@ -191,7 +191,7 @@ export default function LandingPage() {
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
           <a href="#fitur" className="hover:text-white transition-colors">Fitur</a>
-          <a href="#harga" className="hover:text-white transition-colors">Harga</a>
+          <a href="#testimoni" className="hover:text-white transition-colors">Testimoni</a>
           <a href="#testimoni" className="hover:text-white transition-colors">Testimoni</a>
         </div>
         <div className="flex items-center gap-3">
