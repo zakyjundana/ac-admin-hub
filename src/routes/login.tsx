@@ -45,10 +45,22 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      window.location.href = "/dashboard";
-    }
-  }, [user]);
+    // Only auto-redirect when a real Supabase session exists. In demo mode
+    // useAuth returns a stub user which would otherwise cause a redirect
+    // loop against the /_app guard that requires a real session.
+    if (!user || !isConfigured) return;
+    let cancelled = false;
+    (async () => {
+      const { getSession } = await import("@/lib/auth");
+      const session = await getSession();
+      if (!cancelled && session) {
+        window.location.href = "/dashboard";
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isConfigured]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
