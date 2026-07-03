@@ -312,62 +312,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="harga" className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Harga Sesuai Skala Usaha Anda
-            </h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              Mulai gratis, upgrade seiring pertumbuhan bisnis Anda.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {pricing.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative flex flex-col p-6 rounded-2xl border transition-all ${
-                  plan.highlight
-                    ? "bg-gradient-to-b from-blue-600/20 to-cyan-600/10 border-blue-500/50 shadow-xl shadow-blue-500/10"
-                    : "bg-white/5 border-white/10 hover:border-white/20"
-                }`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 text-xs font-bold text-white shadow-lg">
-                    {plan.badge}
-                  </div>
-                )}
-                <div className="mb-5">
-                  <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold">{plan.price}</span>
-                    <span className="text-gray-400 text-sm">{plan.period}</span>
-                  </div>
-                </div>
-                <ul className="space-y-3 mb-7 flex-1">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2.5 text-sm text-gray-300">
-                      <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to={plan.ctaLink as "/register"}
-                  className={`text-center font-semibold py-3 rounded-xl transition-all text-sm ${
-                    plan.highlight
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-blue-500/25"
-                      : "bg-white/10 hover:bg-white/15 text-white"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Pricing section disembunyikan — semua fitur sedang gratis */}
 
       {/* Testimonials */}
       <section id="testimoni" className="py-24 px-6 bg-white/[0.02]">
