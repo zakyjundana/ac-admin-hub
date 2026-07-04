@@ -18,11 +18,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: async () => {
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "",
+  }),
+  beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
     if (!isSupabaseConfigured()) return;
     const session = await getSession();
     if (session) {
+      const safeNext = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : null;
+      if (safeNext) {
+        window.location.href = safeNext;
+        return;
+      }
       throw redirect({ to: "/dashboard" });
     }
   },
@@ -34,6 +42,7 @@ export const Route = createFileRoute("/login")({
   }),
   component: LoginPage,
 });
+
 
 export default function LoginPage() {
   const isConfigured = useIsConfigured();
