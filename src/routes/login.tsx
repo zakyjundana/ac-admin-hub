@@ -47,6 +47,9 @@ export const Route = createFileRoute("/login")({
 export default function LoginPage() {
   const isConfigured = useIsConfigured();
   const { user } = useAuth();
+  const search = Route.useSearch();
+  const nextParam = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
+  const postAuthTarget = nextParam || "/dashboard";
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -63,13 +66,13 @@ export default function LoginPage() {
       const { getSession } = await import("@/lib/auth");
       const session = await getSession();
       if (!cancelled && session) {
-        window.location.href = "/dashboard";
+        window.location.href = postAuthTarget;
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [user, isConfigured]);
+  }, [user, isConfigured, postAuthTarget]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -88,7 +91,7 @@ export default function LoginPage() {
 
     try {
       await signIn(form.email, form.password);
-      window.location.href = "/dashboard";
+      window.location.href = postAuthTarget;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
       if (msg.includes("Invalid login credentials")) {
@@ -106,18 +109,22 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setLoading(true);
     try {
+      // Preserve consent-return target across the Google OAuth round trip by
+      // storing it and using a public callback URL as redirect_uri.
+      if (nextParam) sessionStorage.setItem("post_auth_target", nextParam);
       const { lovable } = await import("@/integrations/lovable/index");
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/login`,
       });
       if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
       if (result.redirected) return;
-      window.location.href = "/dashboard";
+      window.location.href = postAuthTarget;
     } catch (err: any) {
       toast.error(err.message || "Gagal masuk dengan Google.");
       setLoading(false);
     }
   }
+
 
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white flex">
