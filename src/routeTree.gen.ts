@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BookRouteImport } from './routes/book'
@@ -27,7 +28,11 @@ import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
 import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
 import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicIpaymuWebhookRouteImport } from './routes/api/public/ipaymu-webhook'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -47,6 +52,11 @@ const RefundRoute = RefundRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -118,9 +128,32 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
   id: '/api/public/ipaymu-webhook',
   path: '/api/public/ipaymu-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -129,10 +162,13 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AppDashboardRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
@@ -142,6 +178,8 @@ export interface FileRoutesByFullPath {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -149,10 +187,13 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AppDashboardRoute
   '/jadwal': typeof AppJadwalRoute
   '/keuangan': typeof AppKeuanganRoute
@@ -162,6 +203,8 @@ export interface FileRoutesByTo {
   '/riwayat': typeof AppRiwayatRoute
   '/stok': typeof AppStokRoute
   '/teknisi': typeof AppTeknisiRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRoutesById {
@@ -171,10 +214,13 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/refund': typeof RefundRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/jadwal': typeof AppJadwalRoute
   '/_app/keuangan': typeof AppKeuanganRoute
@@ -184,6 +230,8 @@ export interface FileRoutesById {
   '/_app/riwayat': typeof AppRiwayatRoute
   '/_app/stok': typeof AppStokRoute
   '/_app/teknisi': typeof AppTeknisiRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/ipaymu-webhook': typeof ApiPublicIpaymuWebhookRoute
 }
 export interface FileRouteTypes {
@@ -193,10 +241,13 @@ export interface FileRouteTypes {
     | '/book'
     | '/faq'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/jadwal'
     | '/keuangan'
@@ -206,6 +257,8 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/ipaymu-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -213,10 +266,13 @@ export interface FileRouteTypes {
     | '/book'
     | '/faq'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/jadwal'
     | '/keuangan'
@@ -226,6 +282,8 @@ export interface FileRouteTypes {
     | '/riwayat'
     | '/stok'
     | '/teknisi'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/ipaymu-webhook'
   id:
     | '__root__'
@@ -234,10 +292,13 @@ export interface FileRouteTypes {
     | '/book'
     | '/faq'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/refund'
     | '/register'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_app/dashboard'
     | '/_app/jadwal'
     | '/_app/keuangan'
@@ -247,6 +308,8 @@ export interface FileRouteTypes {
     | '/_app/riwayat'
     | '/_app/stok'
     | '/_app/teknisi'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/ipaymu-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -256,10 +319,15 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
   RefundRoute: typeof RefundRoute
   RegisterRoute: typeof RegisterRoute
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicIpaymuWebhookRoute: typeof ApiPublicIpaymuWebhookRoute
 }
 
@@ -291,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -391,11 +466,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ipaymu-webhook': {
       id: '/api/public/ipaymu-webhook'
       path: '/api/public/ipaymu-webhook'
       fullPath: '/api/public/ipaymu-webhook'
       preLoaderRoute: typeof ApiPublicIpaymuWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -433,10 +536,16 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
   RefundRoute: RefundRoute,
   RegisterRoute: RegisterRoute,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicIpaymuWebhookRoute: ApiPublicIpaymuWebhookRoute,
 }
 export const routeTree = rootRouteImport
