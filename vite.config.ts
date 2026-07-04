@@ -1,4 +1,5 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 // Detect Supabase URL from any possible environment variable name
 const supabaseUrl =
@@ -37,5 +38,6 @@ export default defineConfig({
   },
   vite: {
     define: defineOverrides,
+    plugins: [mcpPlugin()],
   },
 });

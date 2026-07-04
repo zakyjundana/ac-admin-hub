@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://vrmrsakxlbbiogfrppkd.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "coolservice-mcp",
+      "version": "0.1.0",
+      "title": "CoolService MCP"
+    },
+    "tools": [
+      {
+        "name": "list_orders",
+        "title": "Daftar orderan servis AC",
+        "description": "Ambil daftar orderan servis AC milik pengguna. Bisa difilter berdasarkan status (Belum Selesai, Dalam Pengerjaan, Selesai) dan jumlah maksimum baris.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Filter status orderan.",
+              "type": "string",
+              "enum": [
+                "Belum Selesai",
+                "Dalam Pengerjaan",
+                "Selesai"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "description": "Jumlah baris maksimum.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_order",
+        "title": "Buat orderan servis AC",
+        "description": "Buat satu orderan servis AC baru untuk pengguna yang sedang login. Gunakan format tanggal YYYY-MM-DD dan jam HH:MM (24 jam).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "nama_pelanggan": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "no_wa": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 20
+            },
+            "alamat": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "wilayah": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "keluhan": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "tanggal": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "jam": {
+              "default": "09:00",
+              "type": "string",
+              "pattern": "^\\d{2}:\\d{2}$"
+            },
+            "teknisi_id": {
+              "description": "ID teknisi yang ditugaskan (opsional).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "nama_pelanggan",
+            "no_wa",
+            "alamat",
+            "wilayah",
+            "keluhan",
+            "tanggal"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_technicians",
+        "title": "Daftar teknisi",
+        "description": "Ambil daftar teknisi milik pengguna beserta nama, nomor HP, dan wilayah layanan.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_spareparts",
+        "title": "Daftar stok spare part",
+        "description": "Ambil daftar spare part beserta stok saat ini. Aktifkan low_stock_only=true untuk hanya menampilkan item yang stoknya di bawah stok minimum.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "low_stock_only": {
+              "default": false,
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_service_history",
+        "title": "Riwayat servis selesai",
+        "description": "Ambil riwayat servis AC yang sudah selesai, urut dari terbaru. Berisi jenis kerusakan, tindakan, biaya, dan tanggal selesai.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
