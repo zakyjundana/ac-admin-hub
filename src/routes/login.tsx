@@ -26,7 +26,10 @@ export const Route = createFileRoute("/login")({
     if (!isSupabaseConfigured()) return;
     const session = await getSession();
     if (session) {
-      const safeNext = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : null;
+      const stored = sessionStorage.getItem("post_auth_target");
+      const candidate = search.next || stored || "";
+      const safeNext = candidate && candidate.startsWith("/") && !candidate.startsWith("//") ? candidate : null;
+      if (stored) sessionStorage.removeItem("post_auth_target");
       if (safeNext) {
         window.location.href = safeNext;
         return;
@@ -34,6 +37,7 @@ export const Route = createFileRoute("/login")({
       throw redirect({ to: "/dashboard" });
     }
   },
+
   head: () => ({
     meta: [
       { title: "Masuk ke Dashboard - CoolService" },
