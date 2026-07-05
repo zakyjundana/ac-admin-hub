@@ -13,6 +13,8 @@ const supabaseUrl =
 const supabaseAnonKey =
   process.env.SB_ANON_KEY ||
   process.env.VITE_SB_ANON_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
   process.env.VITE_SUPABASE_ANON_KEY ||
   process.env.SUPABASE_ANON_KEY ||
   "";
@@ -26,6 +28,7 @@ if (supabaseUrl) {
   defineOverrides["import.meta.env.VITE_SB_URL"] = JSON.stringify(supabaseUrl);
 }
 if (supabaseAnonKey) {
+  defineOverrides["import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY"] = JSON.stringify(supabaseAnonKey);
   defineOverrides["import.meta.env.VITE_SUPABASE_ANON_KEY"] = JSON.stringify(supabaseAnonKey);
   defineOverrides["import.meta.env.VITE_SB_ANON_KEY"] = JSON.stringify(supabaseAnonKey);
 }

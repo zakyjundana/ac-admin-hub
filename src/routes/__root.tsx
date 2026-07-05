@@ -111,28 +111,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
-  beforeLoad: async () => {
-    // If we're on the client side and Supabase has not been marked as configured,
-    // fetch the configuration from the server environment.
-    if (typeof window !== "undefined") {
-      const { isSupabaseConfigured, setRuntimeConfigured } = await import("@/lib/auth");
-      if (!isSupabaseConfigured()) {
-        try {
-          const { getSupabaseConfig } = await import("@/lib/api/config.functions");
-          const { initializeSupabase } = await import("@/lib/supabase");
-          
-          const config = await getSupabaseConfig();
-          if (config.url && config.anonKey) {
-            initializeSupabase(config.url, config.anonKey);
-            setRuntimeConfigured(true);
-            console.log("[Root] Dynamically initialized Supabase config on client.");
-          }
-        } catch (err) {
-          console.warn("Failed to fetch runtime supabase config in root beforeLoad:", err);
-        }
-      }
-    }
-  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
