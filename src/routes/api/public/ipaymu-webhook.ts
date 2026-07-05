@@ -10,8 +10,16 @@ export const Route = createFileRoute("/api/public/ipaymu-webhook")({
 
           // Signature Verification (Mandatory)
           const env = typeof process !== "undefined" ? process.env : {};
-          const apiKey = env.IPAYMU_API_KEY || "sandbox-api-key";
-          const va = env.IPAYMU_VA || "0000007890123456";
+          const apiKey = env.IPAYMU_API_KEY;
+          const va = env.IPAYMU_VA;
+
+          if (!apiKey || !va) {
+            console.error("iPaymu webhook not configured: missing IPAYMU_API_KEY or IPAYMU_VA");
+            return new Response(
+              JSON.stringify({ status: "error", message: "Webhook not configured" }),
+              { status: 500, headers: { "Content-Type": "application/json" } },
+            );
+          }
 
           const incomingSignature = request.headers.get("signature") || "";
           const incomingTimestamp = request.headers.get("timestamp") || "";
