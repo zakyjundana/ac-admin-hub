@@ -53,30 +53,36 @@ export default function LoginPage() {
   const { user } = useAuth();
   const search = Route.useSearch();
   const nextParam = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
-  const postAuthTarget = nextParam || "/dashboard";
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Resolve a safe same-origin post-auth target. Priority: ?next= > sessionStorage > /dashboard.
+  // Only accepts relative paths starting with "/" (and not "//") to prevent open-redirect attacks.
+  function resolvePostAuthTarget(): string {
+    const stored = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_target") : null;
+    const candidate = nextParam || stored || "";
+    const isSafe = !!candidate && candidate.startsWith("/") && !candidate.startsWith("//");
+    if (stored) sessionStorage.removeItem("post_auth_target");
+    return isSafe ? candidate : "/dashboard";
+  }
+
   useEffect(() => {
-    // Only auto-redirect when a real Supabase session exists. In demo mode
-    // useAuth returns a stub user which would otherwise cause a redirect
-    // loop against the /_app guard that requires a real session.
     if (!user || !isConfigured) return;
     let cancelled = false;
     (async () => {
       const { getSession } = await import("@/lib/auth");
       const session = await getSession();
       if (!cancelled && session) {
-        window.location.href = postAuthTarget;
+        window.location.href = resolvePostAuthTarget();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [user, isConfigured, postAuthTarget]);
+  }, [user, isConfigured, nextParam]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
