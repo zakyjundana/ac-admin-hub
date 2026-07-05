@@ -2,9 +2,34 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+function getProjectRefFromJwt(key: string) {
+  try {
+    const payload = key.split(".")[1];
+    if (!payload) return "";
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const parsed = JSON.parse(atob(padded)) as { ref?: unknown };
+    return typeof parsed.ref === "string" ? parsed.ref : "";
+  } catch {
+    return "";
+  }
+}
+
+function getMatchingSupabaseUrl(url: string, key: string) {
+  const ref = getProjectRefFromJwt(key);
+  if (!url || !ref) return url;
+  try {
+    const hostname = new URL(url).hostname;
+    if (hostname.startsWith(`${ref}.`) || hostname.includes("lovable.cloud")) return url;
+  } catch {
+    return url;
+  }
+  return `https://${ref}.supabase.co`;
+}
+
 export const getSupabaseConfig = createServerFn({ method: "GET" }).handler(async () => {
   const env = typeof process !== "undefined" ? process.env : {};
-  const url =
+  const configuredUrl =
     env.SB_URL ||
     env.VITE_SB_URL ||
     env.VITE_SUPABASE_URL ||
@@ -18,6 +43,7 @@ export const getSupabaseConfig = createServerFn({ method: "GET" }).handler(async
     env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     env.SUPABASE_PUBLISHABLE_KEY ||
     "";
+  const url = getMatchingSupabaseUrl(configuredUrl, anonKey);
   return { url, anonKey };
 });
 
