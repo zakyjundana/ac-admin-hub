@@ -101,7 +101,7 @@ export default function LoginPage() {
 
     try {
       await signIn(form.email, form.password);
-      window.location.href = postAuthTarget;
+      window.location.href = resolvePostAuthTarget();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
       if (msg.includes("Invalid login credentials")) {
