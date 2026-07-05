@@ -128,7 +128,7 @@ export default function LoginPage() {
       });
       if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
       if (result.redirected) return;
-      window.location.href = postAuthTarget;
+      window.location.href = resolvePostAuthTarget();
     } catch (err: any) {
       toast.error(err.message || "Gagal masuk dengan Google.");
       setLoading(false);
