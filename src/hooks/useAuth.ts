@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase, initializeSupabase } from "@/lib/supabase";
-import { isSupabaseConfigured, setRuntimeConfigured, getCurrentUser, type AuthUser } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, getCurrentUser, type AuthUser } from "@/lib/auth";
 import { store } from "@/lib/dataStore";
-import { getSupabaseConfig } from "@/lib/api/config.functions";
 
 type AuthState = {
   user: AuthUser | null;
