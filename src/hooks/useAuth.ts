@@ -16,20 +16,9 @@ export function useAuth(): AuthState {
     let listenerSubscription: { unsubscribe: () => void } | undefined;
 
     async function initAuth() {
-      // 1. If not configured, fetch from server environment
-      if (!isSupabaseConfigured()) {
-        try {
-          const config = await getSupabaseConfig();
-          if (config.url && config.anonKey) {
-            initializeSupabase(config.url, config.anonKey);
-            setRuntimeConfigured(true);
-          }
-        } catch (err) {
-          console.warn("Failed to fetch runtime supabase config:", err);
-        }
-      }
-
+      // Supabase env vars are injected at build time; no runtime fetch needed.
       if (!active) return;
+
 
       // 2. Proceed with demo check or normal login check
       if (!isSupabaseConfigured()) {
