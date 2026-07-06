@@ -1,90 +1,106 @@
-## Masalah 1: Login Google balik ke /login terus
 
-**Akar masalah:** Ada **dua Supabase client** yang jalan bersamaan:
+## Prasyarat manual (kamu, sekali setup)
 
-- `src/integrations/supabase/client.ts` (auto-generated) — dipakai oleh `@lovable.dev/cloud-auth-js` untuk `setSession()` setelah Google OAuth berhasil.
-- `src/lib/supabase.ts` (custom, pakai proxy + `initializeSupabase`) — dipakai oleh `useAuth`, `_app.tsx` beforeLoad, dan `login.tsx` beforeLoad untuk cek `getSession()`.
+Sebelum saya bisa implement 2-way sync, ada 2 langkah manual di sisi kamu:
 
-Kedua client menulis session ke **localStorage key yang berbeda** (dan bahkan bisa beda project ref). Akibatnya:
+### 1. Paste Client ID + Client Secret ke Cloud Auth Settings
 
-1. Klik "Masuk dengan Google" → popup sukses → lovable client `setSession(tokens)` di client A.
-2. `window.location.href = '/dashboard'` → full reload.
-3. `_app.tsx` beforeLoad panggil `getSession()` dari client B → **null** → `redirect({ to: '/login' })`.
-4. `/login` beforeLoad juga cek client B → null → tampil form login lagi.
+Di panel **Cloud → Users → Auth Settings → Sign In Methods → Google Provider**:
+- **Client ID (for OAuth)**: paste Client ID yang sama dari Google Cloud Console
+- **Client Secret (for OAuth)**: paste Client Secret dari Google Cloud Console (halaman Credentials, di samping Client ID — kalau belum keliatan, klik ikon mata/"Reset secret")
+- **Authorized Client IDs**: kosongkan (khusus native app)
+- **Save**
 
-Login email/password kelihatannya jalan karena `signIn()` di `src/lib/auth.ts` pakai `@/lib/supabase` (client B) langsung — session-nya konsisten. Google OAuth-lah yang bocor antar client.
+Langkah ini yang bikin tombol "Masuk dengan Google" pakai OAuth app kamu — syarat wajib biar bisa minta scope `calendar.events`. Kalau di-skip, Google tetep pakai managed client Lovable yang cuma boleh scope `openid email profile`.
 
-### Fix
+### 2. Tambah Redirect URI di Google Cloud Console
 
-Konsolidasi ke **satu** Supabase client — yang auto-generated (`src/integrations/supabase/client.ts`), karena file itu tidak boleh diedit dan sudah dipakai oleh lovable auth helper.
+Di Credentials → OAuth Client ID kamu → **Authorized redirect URIs**, tambahkan URL callback Supabase (formatnya `https://<project-ref>.supabase.co/auth/v1/callback`) — URL persisnya keliatan di panel Cloud Auth Google Provider setelah kamu save Client ID/Secret. Copy dari sana.
 
-1. Ubah `src/lib/supabase.ts` jadi re-export dari `@/integrations/supabase/client` (buang proxy custom + `initializeSupabase`).
-2. Hapus panggilan `initializeSupabase` di `useAuth.ts` (tidak dibutuhkan; env var `VITE_SUPABASE_*` sudah di-inject saat build).
-3. `getSupabaseConfig` fetch runtime bisa disederhanakan/dihapus dari `useAuth` (client generated udah baca `import.meta.env` langsung).
-4. Sederhanakan `isSupabaseConfigured()` — cukup cek `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`.
-5. `redirect_uri` Google tetap `${window.location.origin}/login` (public route, aman), tapi karena kini pakai satu client, session yang di-set setelah popup akan langsung terlihat oleh `_app.tsx`.
+### 3. Client Secret di Project Secrets
 
-Setelah patch, verifikasi via Playwright: login Google → landing di `/dashboard` (bukan `/login`).
+Saya akan minta kamu paste **`Client_Secret`** ke Project Secrets (via tool `add_secret`) — dipakai server function buat exchange refresh token → access token saat bikin/edit event di background (independen dari login user).
 
 ---
 
-## Masalah 2: Integrasi Google Calendar untuk booking
+## Implementasi (yang saya kerjakan setelah prasyarat siap)
 
-User minta **semua kalender ikut sinkron**: teknisi, pemesan (pelanggan), dan pemilik bisnis. Tapi tiap peran punya model auth berbeda, jadi diimplementasikan bertahap dengan pendekatan yang paling ringan dulu.
+### A. Database
 
-### Arsitektur
+Migration baru:
 
-| Peran | Cara koneksi | Alasan |
-|---|---|---|
-| **Pemilik bisnis (admin)** | OAuth per-user via Supabase (`supabase.auth.signInWithOAuth('google', { scopes: 'calendar' })`) — token disimpan di `user_google_tokens`. Event otomatis dibuat saat orderan masuk. | Admin sudah login ke app; tinggal minta scope tambahan sekali. |
-| **Teknisi** | Sama — teknisi login pakai Google di halaman profil teknisi (opsi "Hubungkan Google Calendar"). Token per-teknisi disimpan. Event auto-invite teknisi yang di-assign. | Perlu OAuth per akun teknisi. |
-| **Pemesan/pelanggan** | **"Add to Google Calendar" link** (`calendar.google.com/render?action=TEMPLATE&...`) di halaman konfirmasi booking + di WhatsApp/invoice. **Tanpa OAuth** karena pelanggan tidak login. | Paling ringan, zero-friction, tidak perlu simpan token pelanggan. |
+```sql
+-- Simpan refresh token per user (admin & teknisi yang connect)
+CREATE TABLE public.user_google_tokens (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  refresh_token TEXT NOT NULL,
+  access_token TEXT,
+  expires_at TIMESTAMPTZ,
+  scope TEXT,
+  google_email TEXT,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-Ditambah lagi: teknisi & admin di-invite lewat field `attendees` di event Google Calendar milik admin, jadi mereka terima undangan otomatis walaupun belum connect. Koneksi Google Calendar milik teknisi/admin dipakai buat 2-way sync kalau mereka mau kelolanya dari Google Calendar mereka sendiri.
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_google_tokens TO authenticated;
+GRANT ALL ON public.user_google_tokens TO service_role;
 
-### Perubahan implementasi
+ALTER TABLE public.user_google_tokens ENABLE ROW LEVEL SECURITY;
 
-1. **DB migration**: tabel `user_google_tokens` (user_id, access_token, refresh_token, expires_at, scope). RLS: user hanya baca/tulis token miliknya. GRANT sesuai standar.
-2. **Auth flow**: tombol "Hubungkan Google Calendar" di `/_app/profil` (untuk admin) dan `/_app/teknisi` detail (untuk tiap teknisi). Pakai `supabase.auth.signInWithOAuth` dengan scope `https://www.googleapis.com/auth/calendar.events` + `queryParams: { access_type: 'offline', prompt: 'consent' }` biar dapat refresh token.
-3. **Callback handler** `/routes/api/public/google-callback.ts` (atau reuse `/login` callback) — simpan token ke `user_google_tokens`.
-4. **Server function** `createCalendarEvent.functions.ts`:
-   - Trigger saat orderan dibuat/diupdate.
-   - Ambil token admin dari `user_google_tokens`, refresh jika expired.
-   - POST ke `https://www.googleapis.com/calendar/v3/calendars/primary/events` dengan `attendees: [{ email: teknisi.email }, { email: pelanggan.email }]` dan `sendUpdates: 'all'`.
-   - Simpan `google_event_id` di row `ac_orderan` biar bisa update/hapus.
-5. **Booking page** (`src/routes/book.tsx`): setelah submit sukses, tampilkan tombol **"Tambah ke Google Calendar"** yang buka URL `https://calendar.google.com/calendar/render?action=TEMPLATE&text=...&dates=...&location=...&details=...` di tab baru.
-6. **Kolom baru di `ac_orderan`**: `google_event_id TEXT`, `email_pelanggan TEXT NULL` (untuk invite pelanggan opsional).
+CREATE POLICY "own tokens" ON public.user_google_tokens
+  FOR ALL TO authenticated
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-### Konfirmasi kredensial
+-- Kolom di ac_orderan buat track event Google
+ALTER TABLE public.ac_orderan
+  ADD COLUMN google_event_id TEXT,
+  ADD COLUMN email_pelanggan TEXT;
 
-Google OAuth client yang dipakai Supabase Auth saat ini adalah **managed Lovable Cloud** (default). Managed client itu hanya minta scope `openid email profile` — **tidak bisa** minta `calendar.events`. Jadi user perlu:
+-- Tambah email di teknisi buat auto-invite lewat attendees
+ALTER TABLE public.ac_teknisi
+  ADD COLUMN email TEXT;
+```
 
-- **Pakai OAuth client Google sendiri** (BYO): buat project di Google Cloud Console, enable Google Calendar API, buat OAuth Client ID (Web), taruh Client ID + Secret di Lovable Cloud Auth Settings → Google.
+### B. Auth flow — connect Google Calendar
 
-Ini prasyarat wajib untuk fitur sync 2-way. Kalau user belum siap urus Google Cloud Console, kita bisa **kirim fitur 1 (login Google fixed) + tombol "Add to Google Calendar" untuk semua peran** lebih dulu (tanpa OAuth calendar), lalu 2-way sync menyusul setelah BYO OAuth terpasang.
+Di `src/routes/_app.profil.tsx` (admin) dan `src/routes/_app.teknisi.tsx` (per-teknisi, kalau teknisi punya akun login), tambah tombol **"Hubungkan Google Calendar"**:
+
+```ts
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    scopes: 'https://www.googleapis.com/auth/calendar.events',
+    queryParams: { access_type: 'offline', prompt: 'consent' },
+    redirectTo: `${window.location.origin}/google-callback`,
+  },
+});
+```
+
+Route baru `src/routes/google-callback.tsx`: setelah Supabase set session, ambil `provider_refresh_token` + `provider_token` dari session, panggil server function `saveGoogleTokens` yang nyimpen ke `user_google_tokens`, terus redirect ke `/profil` atau `/teknisi`.
+
+### C. Server functions (`src/lib/api/google-calendar.functions.ts`)
+
+- `saveGoogleTokens({ refresh_token, access_token, expires_at, scope, email })` — insert/upsert ke `user_google_tokens` untuk `context.userId`.
+- `getFreshAccessToken(userId)` — helper server-only: cek `expires_at`; kalau expired, POST ke `https://oauth2.googleapis.com/token` pakai `Client_ID` + `Client_Secret` + refresh_token, update row.
+- `createCalendarEvent({ orderanId })` — pakai `requireSupabaseAuth`; ambil orderan + teknisi + admin, panggil `POST https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all` di calendar admin, dengan `attendees: [teknisi.email, email_pelanggan?]`. Simpan `google_event_id` ke `ac_orderan`.
+- `updateCalendarEvent({ orderanId })` — PATCH event kalau tanggal/jam berubah.
+- `deleteCalendarEvent({ orderanId })` — DELETE event kalau orderan di-cancel/hapus.
+
+### D. Integrasi UI
+
+- `src/components/OrderanDialog.tsx`: setelah insert orderan sukses, panggil `createCalendarEvent({ orderanId })`. Kalau admin belum connect Google, tampilin toast "Hubungkan Google Calendar dulu di Profil biar event otomatis dibuat" (booking tetap tersimpan).
+- Setelah edit tanggal/status: panggil `updateCalendarEvent` / `deleteCalendarEvent`.
+- `src/routes/book.tsx`: **tombol "Tambahkan ke Google Calendar" (yang sudah ada)** dipertahankan buat pelanggan — pelanggan yang isi email di form booking (opsional) juga otomatis dapat undangan event dari `attendees` waktu admin nge-connect.
+
+### E. UX
+
+- Kartu "Google Calendar" di halaman Profil admin: status connected/disconnected + email Google yang terhubung + tombol disconnect (hapus row `user_google_tokens`).
+- Sama untuk detail teknisi (kalau teknisi login sendiri; kalau tidak, cukup field email di form teknisi biar bisa di-invite lewat attendees).
 
 ---
 
-## Detail teknis (untuk implementasi)
+## Yang saya butuh dari kamu sebelum eksekusi
 
-**File yang diubah untuk Fix Login:**
-- `src/lib/supabase.ts` — jadi thin re-export.
-- `src/hooks/useAuth.ts` — hapus `initializeSupabase` + `getSupabaseConfig` init block.
-- `src/lib/auth.ts` — sederhanakan `isSupabaseConfigured()`.
-- `src/hooks/useIsConfigured.ts` — bisa disederhanakan (opsional).
+- Konfirm langkah 1 & 2 di atas sudah beres (paste Client ID+Secret ke Cloud Auth Settings + tambah redirect URI di Google Cloud Console).
+- Approve plan ini → saya jalanin migration, add secret `Client_Secret`, dan tulis semua file.
 
-**File baru/diubah untuk Google Calendar:**
-- Migration: `user_google_tokens` + kolom `google_event_id`, `email_pelanggan` di `ac_orderan`.
-- `src/lib/api/google-calendar.functions.ts` — createEvent/updateEvent/deleteEvent + token refresh.
-- `src/lib/googleCalendarLink.ts` — helper generate URL "Add to Google Calendar".
-- `src/routes/book.tsx` — tombol setelah booking sukses + input email opsional.
-- `src/routes/_app.profil.tsx` — tombol "Hubungkan Google Calendar" untuk admin.
-- `src/components/OrderanDialog.tsx` — trigger `createCalendarEvent` setelah insert.
-- Hooks Supabase auth: pastikan `redirect_uri` OAuth calendar tidak bentrok dengan login flow (pakai state param untuk bedakan).
-
----
-
-## Pertanyaan sebelum eksekusi
-
-1. Sudah punya (atau mau bikin) **OAuth Client Google sendiri** di Google Cloud Console untuk fitur sync kalender? Kalau belum, saya kerjakan **Fix Login + tombol "Add to Google Calendar" (tanpa OAuth)** dulu; sync 2-way menyusul setelah credential siap.
-2. Untuk pelanggan, cukup tombol "Add to Google Calendar" (tanpa perlu login) — konfirm?
+Kalau kamu mau saya mulai dulu di bagian yang gak butuh Cloud Auth (kolom DB + form email teknisi + tombol connect UI) sambil kamu setup, bilang aja.
