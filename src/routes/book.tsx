@@ -28,8 +28,10 @@ import {
   Sparkles,
   Map,
   MessageSquare,
-  Loader2
+  Loader2,
+  CalendarPlus
 } from "lucide-react";
+import { buildGoogleCalendarUrl } from "@/lib/googleCalendarLink";
 import { useStore, store } from "@/lib/dataStore";
 import { WILAYAH_LIST, type Orderan } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
