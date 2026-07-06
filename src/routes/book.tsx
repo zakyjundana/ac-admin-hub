@@ -28,8 +28,10 @@ import {
   Sparkles,
   Map,
   MessageSquare,
-  Loader2
+  Loader2,
+  CalendarPlus
 } from "lucide-react";
+import { buildGoogleCalendarUrl } from "@/lib/googleCalendarLink";
 import { useStore, store } from "@/lib/dataStore";
 import { WILAYAH_LIST, type Orderan } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
@@ -464,6 +466,35 @@ function BookingPage() {
             <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/10 text-[10px] text-primary leading-normal max-w-xs mx-auto">
               Admin kami akan segera menghubungi Anda melalui nomor WhatsApp di atas untuk mengonfirmasi jadwal & menugaskan teknisi.
             </div>
+
+            {(() => {
+              const timeOnly = form.waktu.split(" ")[0]; // "09:00"
+              const [hh, mm] = timeOnly.split(":").map(Number);
+              const dateStr = format(selectedDate, "yyyy-MM-dd");
+              const startISO = `${dateStr}T${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:00`;
+              const endHH = String(Math.min(hh + 2, 23)).padStart(2, "0");
+              const endISO = `${dateStr}T${endHH}:${String(mm).padStart(2, "0")}:00`;
+              const url = buildGoogleCalendarUrl({
+                title: `Servis AC - ${namaBisnis}`,
+                startISO,
+                endISO,
+                details: `Booking servis AC atas nama ${form.nama}.\nKeluhan: ${form.keluhan}\nWhatsApp: ${form.no_wa}`,
+                location: `${form.alamat}, ${form.wilayah}`,
+              });
+              return (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-white text-[#1f1f1f] font-semibold rounded-xl py-3 text-xs shadow-lg hover:bg-gray-100 transition-colors"
+                >
+                  <CalendarPlus className="w-4 h-4" />
+                  Tambahkan ke Google Calendar
+                </a>
+              );
+            })()}
+
+
 
             <Button
               onClick={() => {
