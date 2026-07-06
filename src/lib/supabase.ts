@@ -3,7 +3,15 @@
 // localStorage session key, which caused Google OAuth (via @lovable.dev/cloud-auth-js)
 // to set the session on ONE client while route guards read from ANOTHER — resulting
 // in an infinite redirect back to /login after successful Google sign-in.
-export { supabase } from "@/integrations/supabase/client";
+//
+// The generated client is typed against `Database`, but this project's `ac_*`
+// tables aren't in the generated types yet (data currently lives client-side).
+// We cast the export to an untyped SupabaseClient so existing callers keep
+// compiling until types are regenerated.
+import { supabase as _typedSupabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export const supabase = _typedSupabase as unknown as SupabaseClient;
 
 /**
  * Deprecated: kept as a no-op so legacy call sites don't break.
