@@ -1,29 +1,14 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+// Re-export the auto-generated Supabase client so the whole app uses a single
+// instance. Previously this file created a separate client with its own
+// localStorage session key, which caused Google OAuth (via @lovable.dev/cloud-auth-js)
+// to set the session on ONE client while route guards read from ANOTHER — resulting
+// in an infinite redirect back to /login after successful Google sign-in.
+export { supabase } from "@/integrations/supabase/client";
 
-const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SB_URL) as string | undefined;
-const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SB_ANON_KEY) as string | undefined;
-
-let activeClient = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key-for-demo-mode",
-);
-
-export function initializeSupabase(url: string, anonKey: string) {
-  if (url && anonKey && !url.includes("placeholder")) {
-    activeClient = createClient(url, anonKey);
-    console.log("[Supabase] Re-initialized client with runtime credentials.");
-  }
+/**
+ * Deprecated: kept as a no-op so legacy call sites don't break.
+ * The generated client reads VITE_SUPABASE_* at build time; no runtime init needed.
+ */
+export function initializeSupabase(_url: string, _anonKey: string) {
+  // no-op
 }
-
-export const supabase = new Proxy({} as unknown as SupabaseClient, {
-  get(target, prop, receiver) {
-    const value = Reflect.get(activeClient, prop, receiver);
-    if (typeof value === "function") {
-      return value.bind(activeClient);
-    }
-    return value;
-  },
-  set(target, prop, value, receiver) {
-    return Reflect.set(activeClient, prop, value, receiver);
-  }
-});
