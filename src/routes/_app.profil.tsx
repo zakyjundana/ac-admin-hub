@@ -285,6 +285,9 @@ function ProfilPage() {
           </div>
 
           {/* Paket langganan disembunyikan — semua fitur gratis */}
+
+          {/* Google Calendar Integration */}
+          <GoogleCalendarCard />
         </div>
 
         {/* Right Column: Status & Payment Information */}
