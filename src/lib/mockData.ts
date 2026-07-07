@@ -8,6 +8,7 @@ export interface Teknisi {
   nama: string;
   no_hp: string;
   wilayah: string; // zoning
+  email?: string; // opsional — dipakai untuk invite Google Calendar
 }
 
 export interface Orderan {
@@ -24,6 +25,8 @@ export interface Orderan {
   garansi_hari?: number; // masa garansi setelah selesai (default 30)
   spare_parts?: { sparepart_id: string; qty: number }[];
   sumber?: "Admin" | "Mandiri"; // Asal pemesanan
+  email_pelanggan?: string; // opsional — invite ke Google Calendar
+  google_event_id?: string; // ID event Google Calendar (kalau sudah sync)
 }
 
 // ===== Fase 2: Spare Parts =====
