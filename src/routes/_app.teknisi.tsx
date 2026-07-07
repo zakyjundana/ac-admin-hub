@@ -33,7 +33,7 @@ function TeknisiPage() {
   const teknisi = useStore((s) => s.teknisi);
   const orderan = useStore((s) => s.orderan);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0] });
+  const [form, setForm] = useState({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0], email: "" });
 
   const submit = () => {
     if (!form.nama || !form.no_hp) {
@@ -41,7 +41,7 @@ function TeknisiPage() {
       return;
     }
     store.addTeknisi(form);
-    setForm({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0] });
+    setForm({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0], email: "" });
     setOpen(false);
     toast.success("Teknisi ditambahkan");
   };
@@ -111,6 +111,15 @@ function TeknisiPage() {
             <div className="space-y-1.5">
               <Label>No. HP</Label>
               <Input value={form.no_hp} onChange={(e) => setForm({ ...form, no_hp: e.target.value })} placeholder="08xxx" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Email <span className="text-xs text-muted-foreground">(opsional — untuk invite Google Calendar)</span></Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="teknisi@email.com"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Wilayah</Label>

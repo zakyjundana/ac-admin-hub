@@ -8,6 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { WILAYAH_LIST, STATUS_LIST, type Orderan, type Teknisi } from "@/lib/mockData";
 import { store, useStore } from "@/lib/dataStore";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  createCalendarEvent,
+  updateCalendarEvent,
+} from "@/lib/api/google-calendar.functions";
 
 interface Props {
   open: boolean;
@@ -29,11 +34,40 @@ const empty = (date: string): FormState => ({
   tanggal: date,
   jam: "09:00",
   spare_parts: [],
+  email_pelanggan: "",
 });
+
+/**
+ * Bangun ISO datetime lokal dari tanggal + jam (untuk Google Calendar).
+ * Format tanpa timezone offset — kita kirim `timeZone: 'Asia/Jakarta'` terpisah.
+ */
+function toLocalISO(tanggal: string, jam: string) {
+  return `${tanggal}T${jam}:00`;
+}
+function addHoursLocal(tanggal: string, jam: string, hours: number) {
+  const d = new Date(`${tanggal}T${jam}:00`);
+  d.setHours(d.getHours() + hours);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    d.getFullYear() +
+    "-" +
+    pad(d.getMonth() + 1) +
+    "-" +
+    pad(d.getDate()) +
+    "T" +
+    pad(d.getHours()) +
+    ":" +
+    pad(d.getMinutes()) +
+    ":00"
+  );
+}
 
 export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknisi }: Props) {
   const [form, setForm] = useState<FormState>(() => empty(defaultDate || new Date().toISOString().slice(0, 10)));
+  const [syncing, setSyncing] = useState(false);
   const spareparts = useStore((s) => s.sparepart);
+  const createEventFn = useServerFn(createCalendarEvent);
+  const updateEventFn = useServerFn(updateCalendarEvent);
 
   useEffect(() => {
     if (open) {
@@ -47,19 +81,131 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
   const selectedSparePartId = form.spare_parts?.[0]?.sparepart_id ?? "none";
   const selectedQty = form.spare_parts?.[0]?.qty ?? 1;
 
-  const submit = () => {
+  const syncToGoogleCalendar = async (orderan: FormState & { id?: string }) => {
+    const teknisiObj = teknisi.find((t) => t.id === orderan.teknisi_id);
+    const attendees = [orderan.email_pelanggan, teknisiObj?.email].filter(
+      (e): e is string => !!e && /.+@.+\..+/.test(e),
+    );
+    const title = `Servis AC — ${orderan.nama_pelanggan}`;
+    const description = [
+      `Pelanggan: ${orderan.nama_pelanggan}`,
+      `WA: ${orderan.no_wa}`,
+      teknisiObj ? `Teknisi: ${teknisiObj.nama} (${teknisiObj.no_hp})` : null,
+      `Keluhan: ${orderan.keluhan}`,
+      `Status: ${orderan.status}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const location = `${orderan.alamat}, ${orderan.wilayah}`;
+    const startISO = toLocalISO(orderan.tanggal, orderan.jam);
+    const endISO = addHoursLocal(orderan.tanggal, orderan.jam, 1);
+
+    try {
+      if (editing?.google_event_id) {
+        const res = await updateEventFn({
+          data: {
+            google_event_id: editing.google_event_id,
+            title,
+            description,
+            location,
+            startISO,
+            endISO,
+            attendeeEmails: attendees,
+          },
+        });
+        if (!res.ok) {
+          if (res.error === "not_connected") return { skipped: true };
+          throw new Error(res.error);
+        }
+        return { ok: true };
+      } else {
+        const res = await createEventFn({
+          data: {
+            title,
+            description,
+            location,
+            startISO,
+            endISO,
+            attendeeEmails: attendees,
+          },
+        });
+        if (!res.ok) {
+          if (res.error === "not_connected") return { skipped: true };
+          throw new Error(res.error);
+        }
+        return { ok: true, google_event_id: res.google_event_id };
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const submit = async () => {
     if (!form.nama_pelanggan || !form.no_wa || !form.alamat) {
       toast.error("Lengkapi data pelanggan terlebih dahulu");
       return;
     }
-    if (editing) {
-      store.updateOrderan(editing.id, form);
-      toast.success("Orderan berhasil diperbarui");
-    } else {
-      store.addOrderan(form);
-      toast.success("Orderan baru ditambahkan");
+
+    setSyncing(true);
+    try {
+      // 1. Simpan ke store lokal / Supabase (sesuai flow existing).
+      if (editing) {
+        await store.updateOrderan(editing.id, form);
+      } else {
+        await store.addOrderan(form);
+      }
+
+      // 2. Coba sync ke Google Calendar (silent gagal kalau belum connect).
+      try {
+        const syncRes = await syncToGoogleCalendar({ ...form, id: editing?.id });
+        if (syncRes?.skipped) {
+          toast.success(
+            editing ? "Orderan diperbarui" : "Orderan baru ditambahkan",
+            {
+              description:
+                "Google Calendar belum terhubung. Hubungkan di halaman Profil supaya event otomatis dibuat.",
+            },
+          );
+        } else if (syncRes?.ok) {
+          // Simpan google_event_id ke store kalau baru dibuat.
+          if (!editing && "google_event_id" in syncRes && syncRes.google_event_id) {
+            // Cari orderan terakhir yang baru diadd (matching by content) dan update
+            // dengan google_event_id. Store belum expose "return id from add", jadi
+            // fallback: cari yang paling baru dengan nama+wa+tanggal sama.
+            const state = store.getState();
+            const created = [...state.orderan]
+              .reverse()
+              .find(
+                (o) =>
+                  o.nama_pelanggan === form.nama_pelanggan &&
+                  o.no_wa === form.no_wa &&
+                  o.tanggal === form.tanggal &&
+                  !o.google_event_id,
+              );
+            if (created) {
+              await store.updateOrderan(created.id, {
+                google_event_id: syncRes.google_event_id,
+              });
+            }
+          }
+          toast.success(
+            editing
+              ? "Orderan diperbarui & Google Calendar disinkron"
+              : "Orderan ditambahkan & event Google Calendar dibuat",
+          );
+        }
+      } catch (calErr: any) {
+        console.error("[Calendar sync]", calErr);
+        toast.warning(
+          editing ? "Orderan diperbarui, tapi sync Calendar gagal" : "Orderan ditambahkan, tapi sync Calendar gagal",
+          { description: calErr?.message || "Cek koneksi Google Calendar di Profil." },
+        );
+      }
+
+      onOpenChange(false);
+    } finally {
+      setSyncing(false);
     }
-    onOpenChange(false);
   };
 
   return (
@@ -81,6 +227,15 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
           <div className="sm:col-span-2 space-y-1.5">
             <Label>Alamat</Label>
             <Textarea value={form.alamat} onChange={(e) => set("alamat", e.target.value)} placeholder="Alamat lengkap" rows={2} />
+          </div>
+          <div className="sm:col-span-2 space-y-1.5">
+            <Label>Email Pelanggan <span className="text-xs text-muted-foreground">(opsional — untuk invite Google Calendar)</span></Label>
+            <Input
+              type="email"
+              value={form.email_pelanggan ?? ""}
+              onChange={(e) => set("email_pelanggan", e.target.value)}
+              placeholder="pelanggan@email.com"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Wilayah</Label>
@@ -170,8 +325,10 @@ export function OrderanDialog({ open, onOpenChange, defaultDate, editing, teknis
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={submit}>{editing ? "Simpan Perubahan" : "Tambah Orderan"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={syncing}>Batal</Button>
+          <Button onClick={submit} disabled={syncing}>
+            {syncing ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Tambah Orderan"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
