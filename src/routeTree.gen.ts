@@ -15,6 +15,7 @@ import { Route as RefundRouteImport } from './routes/refund'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GoogleCallbackRouteImport } from './routes/google-callback'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AppRouteImport } from './routes/_app'
@@ -62,6 +63,11 @@ const McpRoute = McpRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoogleCallbackRoute = GoogleCallbackRouteImport.update({
+  id: '/google-callback',
+  path: '/google-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
+  '/google-callback': typeof GoogleCallbackRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
+  '/google-callback': typeof GoogleCallbackRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/book': typeof BookRoute
   '/faq': typeof FaqRoute
+  '/google-callback': typeof GoogleCallbackRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/'
     | '/book'
     | '/faq'
+    | '/google-callback'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/'
     | '/book'
     | '/faq'
+    | '/google-callback'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/book'
     | '/faq'
+    | '/google-callback'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -318,6 +330,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   BookRoute: typeof BookRoute
   FaqRoute: typeof FaqRoute
+  GoogleCallbackRoute: typeof GoogleCallbackRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/google-callback': {
+      id: '/google-callback'
+      path: '/google-callback'
+      fullPath: '/google-callback'
+      preLoaderRoute: typeof GoogleCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -535,6 +555,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   BookRoute: BookRoute,
   FaqRoute: FaqRoute,
+  GoogleCallbackRoute: GoogleCallbackRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
