@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { updateProfile, isSupabaseConfigured } from "@/lib/auth";
 import { createIPaymuPayment, checkOutboundIP } from "@/lib/api/ipaymu.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { GoogleCalendarCard } from "@/components/GoogleCalendarCard";
 
 export const Route = createFileRoute("/_app/profil")({
   head: () => {
