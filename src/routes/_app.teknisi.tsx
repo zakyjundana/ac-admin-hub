@@ -33,7 +33,7 @@ function TeknisiPage() {
   const teknisi = useStore((s) => s.teknisi);
   const orderan = useStore((s) => s.orderan);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0] });
+  const [form, setForm] = useState({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0], email: "" });
 
   const submit = () => {
     if (!form.nama || !form.no_hp) {
@@ -41,7 +41,7 @@ function TeknisiPage() {
       return;
     }
     store.addTeknisi(form);
-    setForm({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0] });
+    setForm({ nama: "", no_hp: "", wilayah: WILAYAH_LIST[0], email: "" });
     setOpen(false);
     toast.success("Teknisi ditambahkan");
   };
