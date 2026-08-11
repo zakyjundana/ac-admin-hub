@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "",
+    next: typeof s.next === "string" ? s.next : undefined,
   }),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/login")({
     const { data } = await supabase.auth.getUser();
     if (data.user) {
       const stored = sessionStorage.getItem("post_auth_target");
-      const candidate = search.next || stored || "";
+      const candidate = search.next ?? stored ?? "";
       const safeNext = candidate && candidate.startsWith("/") && !candidate.startsWith("//") ? candidate : null;
       if (stored) sessionStorage.removeItem("post_auth_target");
       if (safeNext) {
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/login")({
 export default function LoginPage() {
   const { user } = useAuth();
   const search = Route.useSearch();
-  const nextParam = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
+  const nextParam = search.next?.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

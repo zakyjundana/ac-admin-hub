@@ -18,14 +18,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/register")({
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "",
+    next: typeof s.next === "string" ? s.next : undefined,
   }),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
     const { supabase } = await import("@/lib/supabase");
     const { data } = await supabase.auth.getUser();
     if (data.user) {
-      const safeNext = search.next.startsWith("/") && !search.next.startsWith("//")
+      const safeNext = search.next?.startsWith("/") && !search.next.startsWith("//")
         ? search.next
         : data.user.user_metadata?.onboarding_done ? "/dashboard" : "/onboarding";
       window.location.href = safeNext;
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/register")({
 
 export default function RegisterPage() {
   const search = Route.useSearch();
-  const nextTarget = search.next.startsWith("/") && !search.next.startsWith("//")
+  const nextTarget = search.next?.startsWith("/") && !search.next.startsWith("//")
     ? search.next
     : "/onboarding";
   const [showPassword, setShowPassword] = useState(false);

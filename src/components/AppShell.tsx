@@ -1,5 +1,4 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Calendar,
   Users,
