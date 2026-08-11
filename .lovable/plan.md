@@ -1,106 +1,45 @@
 
-## Prasyarat manual (kamu, sekali setup)
+# Stabilkan Login CoolService Tanpa Ganti Backend
 
-Sebelum saya bisa implement 2-way sync, ada 2 langkah manual di sisi kamu:
+## Rekomendasi
 
-### 1. Paste Client ID + Client Secret ke Cloud Auth Settings
+Tetap gunakan **Lovable Cloud**. Pemeriksaan saat ini menunjukkan backend, database, dan layanan autentikasi sehat. Log autentikasi juga mencatat login Google berhasil, sehingga pindah ke Firebase, Clerk, atau backend lain justru menambah migrasi data, perubahan RLS, dan risiko baru tanpa menyelesaikan akar masalah di aplikasi.
 
-Di panel **Cloud → Users → Auth Settings → Sign In Methods → Google Provider**:
-- **Client ID (for OAuth)**: paste Client ID yang sama dari Google Cloud Console
-- **Client Secret (for OAuth)**: paste Client Secret dari Google Cloud Console (halaman Credentials, di samping Client ID — kalau belum keliatan, klik ikon mata/"Reset secret")
-- **Authorized Client IDs**: kosongkan (khusus native app)
-- **Save**
+Masalah yang perlu dibereskan adalah jalur autentikasi di frontend: konfigurasi environment dibuat ulang di beberapa tempat, masih ada fallback mode demo, guard dan redirect saling tumpang tindih, serta login dan register memakai callback yang berbeda.
 
-Langkah ini yang bikin tombol "Masuk dengan Google" pakai OAuth app kamu — syarat wajib biar bisa minta scope `calendar.events`. Kalau di-skip, Google tetep pakai managed client Lovable yang cuma boleh scope `openid email profile`.
+## Perubahan
 
-### 2. Tambah Redirect URI di Google Cloud Console
+1. **Sederhanakan konfigurasi backend**
+   - Hapus deteksi URL/key manual dan injeksi environment khusus dari konfigurasi Vite.
+   - Gunakan satu client Lovable Cloud yang sudah dihasilkan sebagai sumber tunggal untuk auth dan data.
+   - Pertahankan file integrasi generated tanpa modifikasi manual.
 
-Di Credentials → OAuth Client ID kamu → **Authorized redirect URIs**, tambahkan URL callback Supabase (formatnya `https://<project-ref>.supabase.co/auth/v1/callback`) — URL persisnya keliatan di panel Cloud Auth Google Provider setelah kamu save Client ID/Secret. Copy dari sana.
+2. **Bersihkan sisa mode demo**
+   - Hapus user demo, profil demo, local storage demo, dan cabang fallback saat konfigurasi tidak tersedia.
+   - Jika konfigurasi benar-benar gagal, tampilkan status error yang jelas tanpa membuat user palsu atau memicu redirect berulang.
 
-### 3. Client Secret di Project Secrets
+3. **Satukan alur login**
+   - Email/password dan Google memakai satu mekanisme penyimpanan sesi.
+   - Google kembali ke route publik yang konsisten, menunggu sesi benar-benar tersedia, lalu menuju target internal yang sudah divalidasi.
+   - Register Google diarahkan ke onboarding hanya untuk user yang belum selesai onboarding; user lama langsung ke dashboard.
 
-Saya akan minta kamu paste **`Client_Secret`** ke Project Secrets (via tool `add_secret`) — dipakai server function buat exchange refresh token → access token saat bikin/edit event di background (independen dari login user).
+4. **Rapikan auth guard**
+   - Gunakan satu guard client-only pada layout halaman terproteksi.
+   - Verifikasi user melalui auth service, bukan cookie penanda buatan aplikasi.
+   - Hilangkan pengecekan ganda dan redirect yang bisa memantulkan user antara login, onboarding, dan dashboard.
 
----
+5. **Rapikan listener sesi**
+   - Jadikan listener auth global sebagai sumber pembaruan sesi.
+   - Batasi invalidasi/redirect hanya pada event masuk, keluar, dan pembaruan user agar refresh token tidak memicu reload halaman.
+   - Ganti tipe longgar pada hook auth dengan tipe user yang aman.
 
-## Implementasi (yang saya kerjakan setelah prasyarat siap)
+6. **Verifikasi end-to-end**
+   - Uji daftar email, login email, login Google, refresh dashboard, logout, dan redirect `next`.
+   - Pastikan tidak ada loop `/login`, toast missing environment, atau error browser/server.
+   - Jalankan pengecekan TypeScript/build dan uji desktop serta mobile tanpa mengubah fitur operasional lain.
 
-### A. Database
+## Batasan
 
-Migration baru:
-
-```sql
--- Simpan refresh token per user (admin & teknisi yang connect)
-CREATE TABLE public.user_google_tokens (
-  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  refresh_token TEXT NOT NULL,
-  access_token TEXT,
-  expires_at TIMESTAMPTZ,
-  scope TEXT,
-  google_email TEXT,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_google_tokens TO authenticated;
-GRANT ALL ON public.user_google_tokens TO service_role;
-
-ALTER TABLE public.user_google_tokens ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "own tokens" ON public.user_google_tokens
-  FOR ALL TO authenticated
-  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
--- Kolom di ac_orderan buat track event Google
-ALTER TABLE public.ac_orderan
-  ADD COLUMN google_event_id TEXT,
-  ADD COLUMN email_pelanggan TEXT;
-
--- Tambah email di teknisi buat auto-invite lewat attendees
-ALTER TABLE public.ac_teknisi
-  ADD COLUMN email TEXT;
-```
-
-### B. Auth flow — connect Google Calendar
-
-Di `src/routes/_app.profil.tsx` (admin) dan `src/routes/_app.teknisi.tsx` (per-teknisi, kalau teknisi punya akun login), tambah tombol **"Hubungkan Google Calendar"**:
-
-```ts
-await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    scopes: 'https://www.googleapis.com/auth/calendar.events',
-    queryParams: { access_type: 'offline', prompt: 'consent' },
-    redirectTo: `${window.location.origin}/google-callback`,
-  },
-});
-```
-
-Route baru `src/routes/google-callback.tsx`: setelah Supabase set session, ambil `provider_refresh_token` + `provider_token` dari session, panggil server function `saveGoogleTokens` yang nyimpen ke `user_google_tokens`, terus redirect ke `/profil` atau `/teknisi`.
-
-### C. Server functions (`src/lib/api/google-calendar.functions.ts`)
-
-- `saveGoogleTokens({ refresh_token, access_token, expires_at, scope, email })` — insert/upsert ke `user_google_tokens` untuk `context.userId`.
-- `getFreshAccessToken(userId)` — helper server-only: cek `expires_at`; kalau expired, POST ke `https://oauth2.googleapis.com/token` pakai `Client_ID` + `Client_Secret` + refresh_token, update row.
-- `createCalendarEvent({ orderanId })` — pakai `requireSupabaseAuth`; ambil orderan + teknisi + admin, panggil `POST https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all` di calendar admin, dengan `attendees: [teknisi.email, email_pelanggan?]`. Simpan `google_event_id` ke `ac_orderan`.
-- `updateCalendarEvent({ orderanId })` — PATCH event kalau tanggal/jam berubah.
-- `deleteCalendarEvent({ orderanId })` — DELETE event kalau orderan di-cancel/hapus.
-
-### D. Integrasi UI
-
-- `src/components/OrderanDialog.tsx`: setelah insert orderan sukses, panggil `createCalendarEvent({ orderanId })`. Kalau admin belum connect Google, tampilin toast "Hubungkan Google Calendar dulu di Profil biar event otomatis dibuat" (booking tetap tersimpan).
-- Setelah edit tanggal/status: panggil `updateCalendarEvent` / `deleteCalendarEvent`.
-- `src/routes/book.tsx`: **tombol "Tambahkan ke Google Calendar" (yang sudah ada)** dipertahankan buat pelanggan — pelanggan yang isi email di form booking (opsional) juga otomatis dapat undangan event dari `attendees` waktu admin nge-connect.
-
-### E. UX
-
-- Kartu "Google Calendar" di halaman Profil admin: status connected/disconnected + email Google yang terhubung + tombol disconnect (hapus row `user_google_tokens`).
-- Sama untuk detail teknisi (kalau teknisi login sendiri; kalau tidak, cukup field email di form teknisi biar bisa di-invite lewat attendees).
-
----
-
-## Yang saya butuh dari kamu sebelum eksekusi
-
-- Konfirm langkah 1 & 2 di atas sudah beres (paste Client ID+Secret ke Cloud Auth Settings + tambah redirect URI di Google Cloud Console).
-- Approve plan ini → saya jalanin migration, add secret `Client_Secret`, dan tulis semua file.
-
-Kalau kamu mau saya mulai dulu di bagian yang gak butuh Cloud Auth (kolom DB + form email teknisi + tombol connect UI) sambil kamu setup, bilang aja.
+- Tidak mengganti database atau memigrasikan data.
+- Tidak mengubah halaman operasional, iPaymu, MCP, atau Google Calendar kecuali bagian yang langsung bergantung pada sesi login.
+- Tidak menyimpan atau menampilkan secret di kode.
