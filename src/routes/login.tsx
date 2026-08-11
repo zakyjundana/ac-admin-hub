@@ -1,7 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 // Trigger commit update for Lovable GitHub sync
 import { useState, useEffect } from "react";
-import { useIsConfigured } from "@/hooks/useIsConfigured";
 import {
   Wrench,
   Eye,
@@ -12,22 +11,21 @@ import {
   ShieldCheck,
   AlertCircle,
 } from "lucide-react";
-import { signIn, isSupabaseConfigured, getSession } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { signIn } from "@/lib/auth";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "",
+    next: typeof s.next === "string" ? s.next : undefined,
   }),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
-    if (!isSupabaseConfigured()) return;
-    const session = await getSession();
-    if (session) {
+    const { supabase } = await import("@/lib/supabase");
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
       const stored = sessionStorage.getItem("post_auth_target");
-      const candidate = search.next || stored || "";
+      const candidate = search.next ?? stored ?? "";
       const safeNext = candidate && candidate.startsWith("/") && !candidate.startsWith("//") ? candidate : null;
       if (stored) sessionStorage.removeItem("post_auth_target");
       if (safeNext) {
@@ -49,10 +47,9 @@ export const Route = createFileRoute("/login")({
 
 
 export default function LoginPage() {
-  const isConfigured = useIsConfigured();
   const { user } = useAuth();
   const search = Route.useSearch();
-  const nextParam = search.next && search.next.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
+  const nextParam = search.next?.startsWith("/") && !search.next.startsWith("//") ? search.next : "";
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -70,19 +67,19 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    if (!user || !isConfigured) return;
+    if (!user) return;
     let cancelled = false;
     (async () => {
-      const { getSession } = await import("@/lib/auth");
-      const session = await getSession();
-      if (!cancelled && session) {
+      const { supabase } = await import("@/lib/supabase");
+      const { data } = await supabase.auth.getUser();
+      if (!cancelled && data.user) {
         window.location.href = resolvePostAuthTarget();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [user, isConfigured, nextParam]);
+  }, [user, nextParam]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -129,8 +126,8 @@ export default function LoginPage() {
       if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
       if (result.redirected) return;
       window.location.href = resolvePostAuthTarget();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal masuk dengan Google.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal masuk dengan Google.");
       setLoading(false);
     }
   }

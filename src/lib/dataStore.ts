@@ -34,7 +34,7 @@ let state: State = {
   riwayat: initialRiwayat,
   feedback: initialFeedback,
   pengeluaran: initialPengeluaran,
-  demoMode: true,
+  demoMode: false,
 };
 
 let currentUserId: string | null = null;
@@ -51,45 +51,26 @@ export const store = {
   },
 
   // Check if we are currently in demo mode
-  isDemoMode: () => {
-    if (!isSupabaseConfigured() || !currentUserId) return true;
-    // Default to live mode (false) unless user explicitly turned on demo mode
-    const stored = typeof window !== "undefined" ? localStorage.getItem("coolservice_demo_mode_" + currentUserId) : null;
-    return stored === "true";
-  },
+  isDemoMode: () => false,
 
   // Set demo mode status
-  setDemoMode: (enabled: boolean) => {
-    if (currentUserId && typeof window !== "undefined") {
-      localStorage.setItem("coolservice_demo_mode_" + currentUserId, enabled ? "true" : "false");
-    }
-    store.syncUser(currentUserId);
-  },
+  setDemoMode: (_enabled: boolean) => undefined,
 
   // Synchronize store with the logged-in user
   syncUser: async (userId: string | null) => {
     currentUserId = userId;
-    // isDemo = true only when: not configured, no userId, OR user explicitly set demo=true
-    // A missing/null key means live mode for authenticated users
-    const storedDemo = userId && typeof window !== "undefined" ? localStorage.getItem("coolservice_demo_mode_" + userId) : null;
-    
-    // If authenticated user has never set a preference, default to live mode and persist it
-    if (userId && storedDemo === null && isSupabaseConfigured() && typeof window !== "undefined") {
-      localStorage.setItem("coolservice_demo_mode_" + userId, "false");
-    }
-    
-    const isDemo = !isSupabaseConfigured() || !userId || storedDemo === "true";
+    const isDemo = !userId;
 
     if (isDemo) {
-      // Demo mode or logged out -> use mock data
+      // Logged-out state must never expose demo business data.
       state = {
-        teknisi: initialTeknisi,
-        orderan: initialOrderan,
-        sparepart: initialSparePart,
-        riwayat: initialRiwayat,
-        feedback: initialFeedback,
-        pengeluaran: initialPengeluaran,
-        demoMode: true,
+        teknisi: [],
+        orderan: [],
+        sparepart: [],
+        riwayat: [],
+        feedback: [],
+        pengeluaran: [],
+        demoMode: false,
       };
       emit();
     } else {

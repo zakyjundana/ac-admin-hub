@@ -15,23 +15,17 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { isSupabaseConfigured } from "@/lib/auth";
 import { store } from "@/lib/dataStore";
-import { checkServerSession } from "@/lib/api/config.functions";
 
 export const Route = createFileRoute("/onboarding")({
+  ssr: false,
   beforeLoad: async () => {
-    let isAuthenticated = false;
-    if (typeof window === "undefined") {
-      const res = await checkServerSession();
-      isAuthenticated = res.isAuthenticated;
-    } else {
-      const cookie = document.cookie || "";
-      isAuthenticated = cookie.includes("sb-session=active");
-    }
-
-    if (!isAuthenticated) {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
       throw redirect({ to: "/login" });
+    }
+    if (data.user.user_metadata?.onboarding_done) {
+      throw redirect({ to: "/dashboard" });
     }
   },
   head: () => ({
@@ -88,10 +82,11 @@ export default function OnboardingPage() {
   async function handleFinish() {
     setLoading(true);
     try {
-      let userId: string | null = null;
-      if (isSupabaseConfigured()) {
-        // 1. Simpan profil bisnis ke user metadata
-        await supabase.auth.updateUser({
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) throw new Error("Sesi login tidak valid.");
+      const userId = userData.user.id;
+
+      const { error: profileError } = await supabase.auth.updateUser({
           data: {
             nama_bisnis: bisnis.nama,
             alamat_bisnis: bisnis.alamat,
@@ -99,48 +94,28 @@ export default function OnboardingPage() {
             no_hp_bisnis: bisnis.noHp,
             onboarding_done: true,
           },
-        });
+      });
+      if (profileError) throw profileError;
 
-        // 2. Simpan teknisi ke tabel ac_teknisi
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          userId = user.id;
-          const teknisiPayload = teknisiList
+      const teknisiPayload = teknisiList
             .filter((t) => t.nama && t.noHp && t.wilayah)
             .map((t) => ({
-              user_id: user.id,
+              user_id: userId,
               nama: t.nama,
               no_hp: t.noHp,
               wilayah: t.wilayah,
             }));
-          if (teknisiPayload.length > 0) {
-            await supabase.from("ac_teknisi").insert(teknisiPayload);
-          }
-        }
-      } else {
-        userId = "demo-user-id";
+      if (teknisiPayload.length > 0) {
+        const { error: teknisiError } = await supabase.from("ac_teknisi").insert(teknisiPayload);
+        if (teknisiError) throw teknisiError;
       }
 
       // Sync data store and save the technician to user's storage
-      if (userId) {
-        await store.syncUser(userId);
-        for (const t of teknisiList) {
-          if (t.nama && t.noHp && t.wilayah) {
-            await store.addTeknisi({
-              nama: t.nama,
-              no_hp: t.noHp,
-              wilayah: t.wilayah,
-            });
-          }
-        }
-      }
+      await store.syncUser(userId);
 
-      // Mode demo atau sukses → ke dashboard
       setStep(3);
     } catch (err) {
       console.error("Onboarding error:", err);
-      // Tetap lanjut ke step 3 meski error, jangan block user
-      setStep(3);
     } finally {
       setLoading(false);
     }

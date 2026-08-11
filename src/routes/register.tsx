@@ -13,17 +13,22 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { signUp, isSupabaseConfigured, getSession } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { signUp } from "@/lib/auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/register")({
-  beforeLoad: async () => {
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
+  beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
-    if (!isSupabaseConfigured()) return;
-    const session = await getSession();
-    if (session) {
-      throw redirect({ to: "/dashboard" });
+    const { supabase } = await import("@/lib/supabase");
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      const safeNext = search.next?.startsWith("/") && !search.next.startsWith("//")
+        ? search.next
+        : data.user.user_metadata?.onboarding_done ? "/dashboard" : "/onboarding";
+      window.location.href = safeNext;
     }
   },
   head: () => ({
@@ -36,6 +41,10 @@ export const Route = createFileRoute("/register")({
 });
 
 export default function RegisterPage() {
+  const search = Route.useSearch();
+  const nextTarget = search.next?.startsWith("/") && !search.next.startsWith("//")
+    ? search.next
+    : "/onboarding";
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -76,6 +85,7 @@ export default function RegisterPage() {
         nama: form.nama,
         namaBisnis: form.namaBisnis,
         noHp: form.noHp,
+        emailRedirectTo: `${window.location.origin}/login?next=${encodeURIComponent(nextTarget)}`,
       });
 
       if (data?.session) {
@@ -102,14 +112,15 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { lovable } = await import("@/integrations/lovable/index");
+      sessionStorage.setItem("post_auth_target", nextTarget);
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/login`,
       });
       if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
       if (result.redirected) return;
-      window.location.href = "/onboarding";
-    } catch (err: any) {
-      toast.error(err.message || "Gagal daftar dengan Google.");
+      window.location.href = nextTarget;
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal daftar dengan Google.");
       setLoading(false);
     }
   }

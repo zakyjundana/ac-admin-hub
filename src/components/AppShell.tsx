@@ -1,5 +1,4 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Calendar,
   Users,
@@ -14,24 +13,12 @@ import {
   Star,
   LogOut,
   ChevronRight,
-  CreditCard,
-  Check,
-  Sparkles,
-  AlertCircle,
-  MessageSquare,
-  ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
-import { useIsConfigured } from "@/hooks/useIsConfigured";
 import { cn } from "@/lib/utils";
-import { signOut, isSupabaseConfigured } from "@/lib/auth";
-import { createIPaymuPayment } from "@/lib/api/ipaymu.functions";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { signOut } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { useStore, store } from "@/lib/dataStore";
 
 
 const nav = [
@@ -48,7 +35,7 @@ const nav = [
 async function handleLogout() {
   try {
     pendo.clearSession();
-    if (isSupabaseConfigured()) await signOut();
+    await signOut();
     window.location.href = "/login";
   } catch {
     window.location.href = "/login";
@@ -58,91 +45,8 @@ async function handleLogout() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
-  const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<"starter" | "pro" | null>(null);
   const { user } = useAuth();
-  const demoMode = useStore((s) => s.demoMode);
-  const isConfigured = useIsConfigured();
-
-  const getWhatsAppLink = (plan: "starter" | "pro") => {
-    const planName = plan === "starter" ? "Starter Plan" : "Pro Plan";
-    const planPrice = plan === "starter" ? "Rp 99.000" : "Rp 199.000";
-    const email = displayUser?.email || "—";
-    const shopName = displayUser?.namaBisnis || "—";
-    const userId = displayUser?.id || "—";
-    
-    const message = `Halo Admin CoolService, saya ingin melakukan pembayaran manual untuk upgrade paket *${planName}* (${planPrice}).
-
-*Data Akun:*
-- Email: ${email}
-- Nama Usaha: ${shopName}
-- User ID: ${userId}
-
-Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi paketnya. Terima kasih!`;
-
-    return `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
-  };
-  const displayUser = user || (!isConfigured ? {
-    id: "demo-user-id",
-    email: "demo@coolservice.com",
-    nama: "Budi Santoso",
-    namaBisnis: "CoolService Mandiri",
-    noHp: "081234567890",
-    subscriptionTier: "free" as const,
-    subscriptionStatus: "active",
-  } : null);
-
-  const ipaymuFn = useServerFn(createIPaymuPayment);
-
-  const handleUpgrade = async (plan: "starter" | "pro") => {
-    if (!displayUser) {
-      toast.error("Silakan masuk terlebih dahulu.");
-      return;
-    }
-    setLoadingUpgrade(plan);
-    try {
-      if (!isConfigured) {
-        // Mode demo: langsung upgrade di localStorage & reload secara lokal
-        const updatedUser = {
-          ...displayUser,
-          subscriptionTier: plan,
-          subscriptionStatus: "active",
-        };
-        localStorage.setItem("demo_user_profile", JSON.stringify(updatedUser));
-        toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-        return;
-      }
-
-      // Secure mode: pass accessToken untuk memverifikasi session di server
-      const { getSession } = await import("@/lib/auth");
-      const session = await getSession();
-      const accessToken = session?.access_token || "";
-
-      const res = await ipaymuFn({
-        data: {
-          planName: plan,
-          origin: window.location.origin,
-          accessToken,
-        },
-      });
-
-
-      if (res.success && res.paymentUrl) {
-        toast.success("Mengarahkan ke halaman pembayaran iPaymu...");
-        window.location.href = res.paymentUrl;
-      } else {
-        toast.error(res.message || "Gagal membuat link pembayaran.");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan koneksi.");
-    } finally {
-      setLoadingUpgrade(null);
-    }
-  };
+  const displayUser = user;
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -197,46 +101,6 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
             );
           })}
         </nav>
-
-        {/* Demo Mode Toggle (Only for logged in users with Supabase configured) */}
-        {isConfigured && user && (
-          <div className="mx-2.5 my-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={cn("size-2 rounded-full", demoMode ? "bg-amber-500 animate-pulse" : "bg-green-500")} />
-                <span className="text-xs font-semibold text-sidebar-foreground">Mode Demo</span>
-              </div>
-              <button
-                onClick={() => {
-                  store.setDemoMode(!demoMode);
-                  if (!demoMode) {
-                    toast.info("Mode Demo diaktifkan");
-                  } else {
-                    toast.success("Kembali ke Data Anda");
-                  }
-                }}
-                className={cn(
-                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  demoMode ? "bg-amber-500" : "bg-white/10"
-                )}
-                role="switch"
-                aria-checked={demoMode}
-              >
-                <span
-                  className={cn(
-                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                    demoMode ? "translate-x-4" : "translate-x-0"
-                  )}
-                />
-              </button>
-            </div>
-            <p className="text-[10px] text-muted-foreground leading-normal">
-              {demoMode 
-                ? "Menampilkan data simulasi lengkap untuk kebutuhan presentasi." 
-                : "Menampilkan data riil milik toko Anda."}
-            </p>
-          </div>
-        )}
 
         {/* Profile + Logout */}
         <div className="p-2.5 border-t border-sidebar-border space-y-1">
@@ -306,29 +170,6 @@ Berikut saya sertakan bukti transfer pembayaran saya. Mohon dibantu aktivasi pak
           </Link>
           <div className="size-9" />
         </header>
-
-        {/* Demo Mode Top Banner */}
-        {demoMode && (
-          <div className="bg-gradient-to-r from-amber-600/15 via-amber-500/5 to-transparent border-b border-amber-500/20 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-300">
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-3.5 text-amber-400 animate-pulse flex-shrink-0" />
-              <span>
-                <strong>Mode Demo Aktif:</strong> Menampilkan data simulasi lengkap. Ini berguna untuk presentasi atau uji coba fitur.
-              </span>
-            </div>
-            {isConfigured && user && (
-              <button
-                onClick={() => {
-                  store.setDemoMode(false);
-                  toast.success("Beralih ke Data Riil");
-                }}
-                className="self-start sm:self-auto bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1 rounded-lg text-[10px] transition-all shadow-md shadow-amber-500/20 hover:scale-[1.02]"
-              >
-                Gunakan Data Saya
-              </button>
-            )}
-          </div>
-        )}
 
         <main className="flex-1 p-4 lg:p-6 xl:p-8 overflow-x-hidden">
           {children}
