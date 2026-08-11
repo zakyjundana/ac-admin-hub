@@ -5,15 +5,8 @@ import {
   Building2, 
   Phone, 
   Mail, 
-  Sparkles, 
-  Check, 
-  CreditCard, 
-  AlertCircle,
   Save,
   Loader2,
-  ShieldCheck,
-  CheckCircle2,
-  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,9 +14,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { updateProfile, isSupabaseConfigured } from "@/lib/auth";
-import { createIPaymuPayment, checkOutboundIP } from "@/lib/api/ipaymu.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { updateProfile } from "@/lib/auth";
 import { GoogleCalendarCard } from "@/components/GoogleCalendarCard";
 
 export const Route = createFileRoute("/_app/profil")({
@@ -47,7 +38,6 @@ export const Route = createFileRoute("/_app/profil")({
 function ProfilPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [loadingUpgrade, setLoadingUpgrade] = useState<string | null>(null);
   
   const [form, setForm] = useState({
     nama: "",
@@ -106,83 +96,6 @@ function ProfilPage() {
       toast.error(err.message || "Gagal memperbarui profil.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const ipaymuFn = useServerFn(createIPaymuPayment);
-  const checkIPFn = useServerFn(checkOutboundIP);
-  const [outboundIP, setOutboundIP] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { supabase } = await import("@/lib/supabase");
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-        if (!accessToken) {
-          if (!cancelled) setOutboundIP("Masuk untuk melihat IP");
-          return;
-        }
-        const res: any = await checkIPFn({ data: { accessToken } });
-        if (cancelled) return;
-        if (res.success && res.ip) setOutboundIP(res.ip);
-        else setOutboundIP("Gagal memuat IP");
-      } catch {
-        if (!cancelled) setOutboundIP("Gagal memuat IP");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [checkIPFn]);
-
-  const handleUpgrade = async (plan: "starter" | "pro") => {
-    if (!user) {
-      toast.error("Silakan masuk terlebih dahulu.");
-      return;
-    }
-    setLoadingUpgrade(plan);
-    try {
-      if (!isSupabaseConfigured()) {
-        // Mode demo: langsung upgrade di localStorage & reload secara lokal
-        const updatedUser = {
-          ...user,
-          subscriptionTier: plan,
-          subscriptionStatus: "active",
-        };
-        localStorage.setItem("demo_user_profile", JSON.stringify(updatedUser));
-        toast.success(`[Simulasi] Sukses meng-upgrade akun ke paket ${plan.toUpperCase()}!`);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-        return;
-      }
-
-      // Secure mode: pass accessToken untuk memverifikasi session di server
-      const { getSession } = await import("@/lib/auth");
-      const session = await getSession();
-      const accessToken = session?.access_token || "";
-
-      const res = await ipaymuFn({
-        data: {
-          planName: plan,
-          origin: window.location.origin,
-          accessToken,
-        },
-      });
-
-
-      if (res.success && res.paymentUrl) {
-        toast.success("Mengarahkan ke halaman pembayaran iPaymu...");
-        window.location.href = res.paymentUrl;
-      } else {
-        toast.error(res.message || "Gagal membuat link pembayaran.");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan koneksi.");
-    } finally {
-      setLoadingUpgrade(null);
     }
   };
 
