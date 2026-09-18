@@ -37,13 +37,32 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
+// A client that navigates away mid-render aborts the socket (ECONNRESET).
+// That is not an application failure and must not render the error page.
+function isClientAbort(request: Request, error?: unknown): boolean {
+  if (request.signal?.aborted) return true;
+  const cause = (error as { cause?: unknown } | undefined)?.cause;
+  const codes = [error, cause].map(
+    (candidate) => (candidate as { code?: string; message?: string } | undefined)?.code,
+  );
+  if (codes.includes("ECONNRESET") || codes.includes("ECONNABORTED")) return true;
+  const message = (error as { message?: string } | undefined)?.message ?? "";
+  return message === "aborted" || message.includes("aborted");
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
+      if (response.status >= 500 && isClientAbort(request)) {
+        return new Response(null, { status: 499 });
+      }
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
+      if (isClientAbort(request, error)) {
+        return new Response(null, { status: 499 });
+      }
       console.error(error);
       return new Response(renderErrorPage(), {
         status: 500,
