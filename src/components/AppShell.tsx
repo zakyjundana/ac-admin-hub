@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { RouteProgress } from "@/components/RouteProgress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const nav = [
@@ -51,6 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex w-full bg-background">
       <Toaster richColors position="top-right" />
+      <RouteProgress />
       {/* Sidebar */}
       <aside
         className={cn(
