@@ -9,70 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as RefundRouteImport } from './routes/refund'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as GoogleCallbackRouteImport } from './routes/google-callback'
-import { Route as FaqRouteImport } from './routes/faq'
-import { Route as BookRouteImport } from './routes/book'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
-import { Route as AppStokRouteImport } from './routes/_app.stok'
-import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
-import { Route as AppRatingRouteImport } from './routes/_app.rating'
-import { Route as AppProfilRouteImport } from './routes/_app.profil'
-import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
-import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
-import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
-import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as BookRouteImport } from './routes/book'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as GoogleCallbackRouteImport } from './routes/google-callback'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as RefundRouteImport } from './routes/refund'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as ApiPublicIpaymuWebhookRouteImport } from './routes/api/public/ipaymu-webhook'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppJadwalRouteImport } from './routes/_app.jadwal'
+import { Route as AppKeuanganRouteImport } from './routes/_app.keuangan'
+import { Route as AppOrderanRouteImport } from './routes/_app.orderan'
+import { Route as AppProfilRouteImport } from './routes/_app.profil'
+import { Route as AppRatingRouteImport } from './routes/_app.rating'
+import { Route as AppRiwayatRouteImport } from './routes/_app.riwayat'
+import { Route as AppStokRouteImport } from './routes/_app.stok'
+import { Route as AppTeknisiRouteImport } from './routes/_app.teknisi'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as ApiPublicIpaymuWebhookRouteImport } from './routes/api/public/ipaymu-webhook'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RefundRoute = RefundRouteImport.update({
-  id: '/refund',
-  path: '/refund',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GoogleCallbackRoute = GoogleCallbackRouteImport.update({
-  id: '/google-callback',
-  path: '/google-callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaqRoute = FaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -80,48 +49,61 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const GoogleCallbackRoute = GoogleCallbackRouteImport.update({
+  id: '/google-callback',
+  path: '/google-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppTeknisiRoute = AppTeknisiRouteImport.update({
-  id: '/teknisi',
-  path: '/teknisi',
-  getParentRoute: () => AppRoute,
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppStokRoute = AppStokRouteImport.update({
-  id: '/stok',
-  path: '/stok',
-  getParentRoute: () => AppRoute,
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppRiwayatRoute = AppRiwayatRouteImport.update({
-  id: '/riwayat',
-  path: '/riwayat',
-  getParentRoute: () => AppRoute,
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppRatingRoute = AppRatingRouteImport.update({
-  id: '/rating',
-  path: '/rating',
-  getParentRoute: () => AppRoute,
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppProfilRoute = AppProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
-  getParentRoute: () => AppRoute,
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppOrderanRoute = AppOrderanRouteImport.update({
-  id: '/orderan',
-  path: '/orderan',
-  getParentRoute: () => AppRoute,
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppKeuanganRoute = AppKeuanganRouteImport.update({
-  id: '/keuangan',
-  path: '/keuangan',
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppJadwalRoute = AppJadwalRouteImport.update({
@@ -129,26 +111,44 @@ const AppJadwalRoute = AppJadwalRouteImport.update({
   path: '/jadwal',
   getParentRoute: () => AppRoute,
 } as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AppKeuanganRoute = AppKeuanganRouteImport.update({
+  id: '/keuangan',
+  path: '/keuangan',
   getParentRoute: () => AppRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
-  id: '/api/public/ipaymu-webhook',
-  path: '/api/public/ipaymu-webhook',
+const AppOrderanRoute = AppOrderanRouteImport.update({
+  id: '/orderan',
+  path: '/orderan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfilRoute = AppProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRatingRoute = AppRatingRouteImport.update({
+  id: '/rating',
+  path: '/rating',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRiwayatRoute = AppRiwayatRouteImport.update({
+  id: '/riwayat',
+  path: '/riwayat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStokRoute = AppStokRouteImport.update({
+  id: '/stok',
+  path: '/stok',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeknisiRoute = AppTeknisiRouteImport.update({
+  id: '/teknisi',
+  path: '/teknisi',
+  getParentRoute: () => AppRoute,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
@@ -157,9 +157,9 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
+const ApiPublicIpaymuWebhookRoute = ApiPublicIpaymuWebhookRouteImport.update({
+  id: '/api/public/ipaymu-webhook',
+  path: '/api/public/ipaymu-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -346,67 +346,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/refund': {
-      id: '/refund'
-      path: '/refund'
-      fullPath: '/refund'
-      preLoaderRoute: typeof RefundRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/google-callback': {
-      id: '/google-callback'
-      path: '/google-callback'
-      fullPath: '/google-callback'
-      preLoaderRoute: typeof GoogleCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/faq': {
-      id: '/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof FaqRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/book': {
-      id: '/book'
-      path: '/book'
-      fullPath: '/book'
-      preLoaderRoute: typeof BookRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -416,81 +360,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/teknisi': {
-      id: '/_app/teknisi'
-      path: '/teknisi'
-      fullPath: '/teknisi'
-      preLoaderRoute: typeof AppTeknisiRouteImport
-      parentRoute: typeof AppRoute
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/stok': {
-      id: '/_app/stok'
-      path: '/stok'
-      fullPath: '/stok'
-      preLoaderRoute: typeof AppStokRouteImport
-      parentRoute: typeof AppRoute
+    '/google-callback': {
+      id: '/google-callback'
+      path: '/google-callback'
+      fullPath: '/google-callback'
+      preLoaderRoute: typeof GoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/riwayat': {
-      id: '/_app/riwayat'
-      path: '/riwayat'
-      fullPath: '/riwayat'
-      preLoaderRoute: typeof AppRiwayatRouteImport
-      parentRoute: typeof AppRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/rating': {
-      id: '/_app/rating'
-      path: '/rating'
-      fullPath: '/rating'
-      preLoaderRoute: typeof AppRatingRouteImport
-      parentRoute: typeof AppRoute
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/profil': {
-      id: '/_app/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof AppProfilRouteImport
-      parentRoute: typeof AppRoute
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/orderan': {
-      id: '/_app/orderan'
-      path: '/orderan'
-      fullPath: '/orderan'
-      preLoaderRoute: typeof AppOrderanRouteImport
-      parentRoute: typeof AppRoute
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/keuangan': {
-      id: '/_app/keuangan'
-      path: '/keuangan'
-      fullPath: '/keuangan'
-      preLoaderRoute: typeof AppKeuanganRouteImport
-      parentRoute: typeof AppRoute
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/jadwal': {
-      id: '/_app/jadwal'
-      path: '/jadwal'
-      fullPath: '/jadwal'
-      preLoaderRoute: typeof AppJadwalRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -500,11 +430,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/ipaymu-webhook': {
-      id: '/api/public/ipaymu-webhook'
-      path: '/api/public/ipaymu-webhook'
-      fullPath: '/api/public/ipaymu-webhook'
-      preLoaderRoute: typeof ApiPublicIpaymuWebhookRouteImport
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jadwal': {
+      id: '/_app/jadwal'
+      path: '/jadwal'
+      fullPath: '/jadwal'
+      preLoaderRoute: typeof AppJadwalRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/keuangan': {
+      id: '/_app/keuangan'
+      path: '/keuangan'
+      fullPath: '/keuangan'
+      preLoaderRoute: typeof AppKeuanganRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/orderan': {
+      id: '/_app/orderan'
+      path: '/orderan'
+      fullPath: '/orderan'
+      preLoaderRoute: typeof AppOrderanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profil': {
+      id: '/_app/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof AppProfilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/rating': {
+      id: '/_app/rating'
+      path: '/rating'
+      fullPath: '/rating'
+      preLoaderRoute: typeof AppRatingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/riwayat': {
+      id: '/_app/riwayat'
+      path: '/riwayat'
+      fullPath: '/riwayat'
+      preLoaderRoute: typeof AppRiwayatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stok': {
+      id: '/_app/stok'
+      path: '/stok'
+      fullPath: '/stok'
+      preLoaderRoute: typeof AppStokRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/teknisi': {
+      id: '/_app/teknisi'
+      path: '/teknisi'
+      fullPath: '/teknisi'
+      preLoaderRoute: typeof AppTeknisiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {
@@ -514,11 +514,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+    '/api/public/ipaymu-webhook': {
+      id: '/api/public/ipaymu-webhook'
+      path: '/api/public/ipaymu-webhook'
+      fullPath: '/api/public/ipaymu-webhook'
+      preLoaderRoute: typeof ApiPublicIpaymuWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
