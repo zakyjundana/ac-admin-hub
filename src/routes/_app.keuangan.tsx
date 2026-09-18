@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useMemo, useState, useEffect } from "react";
 import { 
   TrendingUp, 
@@ -43,6 +44,10 @@ export const Route = createFileRoute("/_app/keuangan")({
     };
   },
   component: KeuanganPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");

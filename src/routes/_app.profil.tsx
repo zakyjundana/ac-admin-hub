@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useState, useEffect } from "react";
 import { 
   User, 
@@ -33,6 +34,10 @@ export const Route = createFileRoute("/_app/profil")({
     };
   },
   component: ProfilPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 function ProfilPage() {

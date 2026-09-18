@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useMemo, useState } from "react";
 import { 
   Star, 
@@ -33,6 +34,10 @@ export const Route = createFileRoute("/_app/rating")({
     };
   },
   component: RatingPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 const StarRating = ({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) => {

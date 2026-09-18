@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useMemo, useState } from "react";
 import { Plus, Search, Package, AlertTriangle, Minus, Trash2, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,10 @@ export const Route = createFileRoute("/_app/stok")({
     };
   },
   component: StokPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
