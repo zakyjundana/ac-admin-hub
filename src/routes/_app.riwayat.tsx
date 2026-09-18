@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useMemo, useState } from "react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -25,6 +26,10 @@ export const Route = createFileRoute("/_app/riwayat")({
     };
   },
   component: RiwayatPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");

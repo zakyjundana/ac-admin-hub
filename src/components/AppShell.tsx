@@ -13,12 +13,15 @@ import {
   Star,
   LogOut,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { RouteProgress } from "@/components/RouteProgress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const nav = [
@@ -43,14 +46,25 @@ async function handleLogout() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname, pendingPath } = useRouterState({
+    select: (s) => {
+      const navigating = s.status === "pending" || s.isLoading;
+      const target = s.location.pathname;
+      const settled = s.resolvedLocation?.pathname ?? target;
+      return {
+        pathname: navigating ? settled : target,
+        pendingPath: navigating && settled !== target ? target : null,
+      };
+    },
+  });
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const displayUser = user;
 
   return (
     <div className="min-h-screen flex w-full bg-background">
       <Toaster richColors position="top-right" />
+      <RouteProgress />
       {/* Sidebar */}
       <aside
         className={cn(
@@ -81,6 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
           {nav.map((item) => {
             const active = pathname === item.to;
+            const pending = !active && pendingPath === item.to;
             const Icon = item.icon;
             return (
               <Link
@@ -97,6 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Icon className={cn("size-4 flex-shrink-0 transition-transform group-hover:scale-110", active && "text-primary-foreground")} />
                 <span className="truncate">{item.label}</span>
                 {active && <div className="ml-auto w-1 h-1 rounded-full bg-primary-foreground/60" />}
+                {pending && <Loader2 className="ml-auto size-3.5 animate-spin text-primary" aria-label="Memuat" />}
               </Link>
             );
           })}
@@ -104,6 +120,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Profile + Logout */}
         <div className="p-2.5 border-t border-sidebar-border space-y-1">
+          {authLoading && !displayUser && (
+            <div className="px-3 py-2.5 rounded-lg bg-sidebar-accent/50 mb-1 flex items-center gap-2.5">
+              <Skeleton className="size-7 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-2.5 w-16" />
+              </div>
+            </div>
+          )}
           {displayUser && (
             <Link
               to="/profil"

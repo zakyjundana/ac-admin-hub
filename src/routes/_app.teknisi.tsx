@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useState } from "react";
 import { Plus, Phone, MapPin, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,10 @@ export const Route = createFileRoute("/_app/teknisi")({
     };
   },
   component: TeknisiPage,
+  pendingMs: 150,
+  pendingMinMs: 300,
+  pendingComponent: () => <PageSkeleton />,
+
 });
 
 function TeknisiPage() {
