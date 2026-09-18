@@ -46,9 +46,16 @@ async function handleLogout() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const pendingPath = useRouterState({
-    select: (s) => (s.status === "pending" || s.isLoading ? s.location.pathname : null),
+  const { pathname, pendingPath } = useRouterState({
+    select: (s) => {
+      const navigating = s.status === "pending" || s.isLoading;
+      const target = s.location.pathname;
+      const settled = s.resolvedLocation?.pathname ?? target;
+      return {
+        pathname: navigating ? settled : target,
+        pendingPath: navigating && settled !== target ? target : null,
+      };
+    },
   });
   const [open, setOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
