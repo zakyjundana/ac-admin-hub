@@ -47,7 +47,7 @@ async function handleLogout() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const displayUser = user;
 
   return (
@@ -107,6 +107,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Profile + Logout */}
         <div className="p-2.5 border-t border-sidebar-border space-y-1">
+          {authLoading && !displayUser && (
+            <div className="px-3 py-2.5 rounded-lg bg-sidebar-accent/50 mb-1 flex items-center gap-2.5">
+              <Skeleton className="size-7 rounded-full" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-2.5 w-16" />
+              </div>
+            </div>
+          )}
           {displayUser && (
             <Link
               to="/profil"
