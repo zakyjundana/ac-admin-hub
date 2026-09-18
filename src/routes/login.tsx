@@ -16,9 +16,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" ? { next: s.next } : {},
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
     const { supabase } = await import("@/lib/supabase");
