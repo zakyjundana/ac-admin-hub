@@ -13,6 +13,7 @@ import {
   Star,
   LogOut,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,9 @@ async function handleLogout() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pendingPath = useRouterState({
+    select: (s) => (s.status === "pending" || s.isLoading ? s.location.pathname : null),
+  });
   const [open, setOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const displayUser = user;
@@ -84,6 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
           {nav.map((item) => {
             const active = pathname === item.to;
+            const pending = !active && pendingPath === item.to;
             const Icon = item.icon;
             return (
               <Link
@@ -100,6 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Icon className={cn("size-4 flex-shrink-0 transition-transform group-hover:scale-110", active && "text-primary-foreground")} />
                 <span className="truncate">{item.label}</span>
                 {active && <div className="ml-auto w-1 h-1 rounded-full bg-primary-foreground/60" />}
+                {pending && <Loader2 className="ml-auto size-3.5 animate-spin text-primary" aria-label="Memuat" />}
               </Link>
             );
           })}
